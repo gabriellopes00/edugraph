@@ -59,10 +59,10 @@ Ver `docs/contratos/projection.md`.
       `expected/discipline_simple.csv`.
 - [x] Dado `synthetic_v1`, a projeção produzida é idêntica à da fixture.
 - [x] Dado o resultado, `validate_projection` passa.
-- [ ] Sobre a projeção aluno↔aluno de uma coorte do OULAD, a execução
-      termina em tempo aceitável — **medir e registrar**. *Pendente: exige
-      o OULAD normalizado (A-02) e o recorte por coorte (A-06); a
-      implementação já é O(nº de arestas da projeção), não O(|S|²).*
+- [x] Sobre a projeção aluno↔aluno de uma coorte do OULAD, a execução
+      termina em tempo aceitável — **medido na A-06** (18/09/2026): coorte
+      BBB_2013J, estágio `data` inteiro (bipartido e projeções) em 22 s.
+      A implementação é O(nº de arestas da projeção), não O(|S|²).
 
 ## Testes exigidos
 

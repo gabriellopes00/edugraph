@@ -56,25 +56,14 @@ Ver as regras em [`README.md`](README.md).
   Mutação temporária fazendo ambos os cálculos por `none`, com os rótulos
   preservados, fez o teste falhar: DC obtido 0, esperado 2/3; fonte
   restaurada e teste passando. A pendência OULAD acima continua aberta.
-
-### C-OBS-05 · Figura 9 precisa acompanhar o redesign da interface
-
-- **De:** auditoria AUD-01, sessão do Lucas · **Data:** 20/10/2026
-- **Onde:** `docs/artigo/indice-figuras.md:18`,
-  `docs/artigo/indice-figuras.md:44`,
-  `results/figures/ui-1-comunidades-synthetic_v1.caption.txt:1`,
-  `results/figures/ui-2-intermediacao-synthetic_v1.caption.txt:1`,
-  `results/figures/ui-3-disciplinas-criticas-oulad_module_presentation.caption.txt:1`
-  e `results/figures/ui-4-alunos-ava-oulad_vle_bbb_2013j.caption.txt:1`.
-- **O quê:** as quatro capturas `ui-1..4` e suas legendas representam a
-  interface anterior ao redesign do branch `c/C-05-redesign-visual`.
-  O índice ainda marca a figura 9 como presente com esses arquivos. A
-  resolução histórica de C-OBS-02 continua válida para a captura original;
-  este item registra a atualização necessária após o novo visual.
-- **Como resolver:** depois do merge do redesign, refazer as quatro capturas
-  com `npm run capture`, revisar as legendas e regenerar o índice com
-  `python -m edugraph figures --index`, usando uma máquina com os artefatos
-  necessários para as telas OULAD.
+- **Atualização:** 30/10/2026 por Pedro, revisão de entrega — com o OULAD
+  baixado e as três configurações rodadas do zero, o código atual já
+  resolve a parte de código: `centrality critical` grava `weight_mode`, `k`,
+  `estimate` e `seed` nas tab6/tab7, e `centrality sensitivity` gera
+  `tab6-sensibilidade-oulad_module_presentation-*.csv` em 1 s. Os valores
+  batem com os versionados (mesmo ranking; diferenças só no 16º dígito do
+  autovetor). Falta só regenerar `results/tables/` e o índice com os
+  comandos acima e fazer o commit.
 
 ### C-OBS-11 · Baixa prioridade: referências históricas a xfail, TODO e handler 501
 
@@ -120,6 +109,61 @@ Ver as regras em [`README.md`](README.md).
   `npm audit fix --force` sem revisar a migração de versão principal.
 
 ## Resolvidas
+
+### C-OBS-13 · Capturas da interface são 60% do peso do repositório
+
+- **De:** Pedro (Frente A), revisão de entrega · **Data:** 30/10/2026
+- **Onde:** `results/figures/ui-1..4-*.png` e `frontend/scripts/` (`npm run capture`)
+- **O quê:** as quatro capturas têm 3200×2000 px em PNG e somam 9,1 MB na
+  árvore e 8,8 dos 14,6 MB do histórico do git. Compressão PNG sem perdas
+  só tira 4%. Medido sobre os arquivos atuais: JPEG qualidade 88 dá
+  2,1 MB no total (−77%); PNG a 1600×1000 dá 3,4 MB (−63%). Como a
+  C-OBS-05 já pede refazer as quatro capturas depois do redesign, dá para
+  resolver as duas coisas juntas.
+- **Como resolver:** ao refazer as capturas, gravar em JPEG (qualidade
+  ~88) ou com `deviceScaleFactor` 1, e ajustar as legendas e o índice de
+  figuras. Se o grupo decidir limpar o histórico antes da entrega (ver
+  `docs/entrega.md` e T-OBS-04), as capturas antigas saem dele também.
+- **Resolvida:** 31/10/2026 por Pedro, branch `a/entrega-revisao` — as quatro capturas `ui-*.png` (9,1 MB) saíram da árvore junto com as demais figuras. O que resta do peso está no histórico do git (T-OBS-04, decisão 2).
+
+### C-OBS-05 · Figura 9 precisa acompanhar o redesign da interface
+
+- **De:** auditoria AUD-01, sessão do Lucas · **Data:** 20/10/2026
+- **Onde:** `docs/artigo/indice-figuras.md:18`,
+  `docs/artigo/indice-figuras.md:44`,
+  `results/figures/ui-1-comunidades-synthetic_v1.caption.txt:1`,
+  `results/figures/ui-2-intermediacao-synthetic_v1.caption.txt:1`,
+  `results/figures/ui-3-disciplinas-criticas-oulad_module_presentation.caption.txt:1`
+  e `results/figures/ui-4-alunos-ava-oulad_vle_bbb_2013j.caption.txt:1`.
+- **O quê:** as quatro capturas `ui-1..4` e suas legendas representam a
+  interface anterior ao redesign do branch `c/C-05-redesign-visual`.
+  O índice ainda marca a figura 9 como presente com esses arquivos. A
+  resolução histórica de C-OBS-02 continua válida para a captura original;
+  este item registra a atualização necessária após o novo visual.
+- **Como resolver:** depois do merge do redesign, refazer as quatro capturas
+  com `npm run capture`, revisar as legendas e regenerar o índice com
+  `python -m edugraph figures --index`, usando uma máquina com os artefatos
+  necessários para as telas OULAD.
+- **Atualização:** 30/10/2026 por Pedro, implementação do laboratório
+  (ADR-0013) — a interface mudou de novo: ganhou a aba *Laboratório ao
+  vivo* (a padrão) e a *Leitura* no explorador (nomes, papéis, contornos).
+  `frontend/scripts/capture.mjs` agora abre em `#explorar`, para que as
+  cenas da figura 9 continuem escolhendo os seletores certos. Vale
+  acrescentar uma cena do laboratório (resultado, com as áreas plantadas
+  reveladas) às quatro `ui-*`, e refazer tudo uma vez só, em JPEG
+  (C-OBS-13).
+- **Atualização:** 31/10/2026 por Pedro — o resultado ganhou a seção
+  *Perfis dos alunos* (risco de evasão e possíveis talentos,
+  `frontend/src/components/Sinais.tsx`) e a legenda das comunidades passou
+  a contar alunos em risco e talentos por grupo. Para a figura 9, uma cena
+  boa é o resultado do laboratório com *Revelar o desfecho* ligado
+  (tabela "Conferindo com o que aconteceu").
+- **Atualização:** 31/10/2026 por Pedro — a interface ganhou um tour de
+  boas-vindas que abre na primeira visita e cobriria as capturas.
+  `frontend/scripts/capture.mjs` agora navega para `/?semtour#explorar`
+  (`?semtour` desliga o tour). Quem usar outro script de captura deve
+  fazer o mesmo.
+- **Resolvida:** 31/10/2026 por Pedro, branch `a/entrega-revisao` — decisão do grupo: as figuras e capturas deixam de ser versionadas (`results/figures/` apagada e no `.gitignore`, índice gerado removido). A figura 9 não será refeita; os resultados se mostram na interface. `npm run capture` continua funcionando e grava em `results/figures/`, pasta ignorada.
 
 ### C-OBS-06 · Documentação ainda anuncia 275 testes e 11 xfail da Frente C
 

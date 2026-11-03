@@ -5,10 +5,9 @@ na seção 8 do briefing: comunidades plantadas de propósito servem de
 *ground truth* para verificar se Louvain e Girvan-Newman recuperam
 estrutura conhecida.
 
-O que já funciona aqui é o gerador do dia 0, usado por
-``scripts/make_fixtures.py`` para produzir ``synthetic_v1``. A spec A-01
-o estende com esparsidade tipo OULAD e número de grupos configurável —
-os pontos marcados com ``NotImplementedError("A-01")``.
+É o gerador usado por ``scripts/make_fixtures.py`` para produzir
+``synthetic_v1`` e ``synthetic_v2``. A spec A-01 (fechada) o estendeu com
+esparsidade tipo OULAD e número de grupos configurável.
 
 O starter kit foi removido do repositório; ``reference/README.md``
 registra o que ele era e como recuperá-lo do histórico do git.

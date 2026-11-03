@@ -49,9 +49,7 @@ fora do git. Para refazer tudo numa máquina nova:
 python scripts/download_oulad.py                     # espelho do UCI, com SHA-256 conferido
 python -m edugraph data etl                          # 6 s, pico de 171 MB
 python -m edugraph run configs/oulad_cohort_bbb_2013j.toml --only data     # 22 s
-python -m edugraph data bipartite configs/oulad_module_presentation.toml
-python -m edugraph data project --root data/processed \
-    --dataset oulad_module_presentation --side discipline --weighting simple
+python -m edugraph run configs/oulad_module_presentation.toml --only data  # 4 s
 # linha de base para a Frente B (A-08):
 python -m edugraph data null --root data/processed \
     --dataset oulad_module_presentation --replicas 5
@@ -76,11 +74,13 @@ como ausente, como na distribuição do UCI.
 Em `data/processed`, prontos para `--root`:
 
 - `oulad_bbb_2013j` — coorte BBB 2013J por avaliação: 1.706 alunos,
-  11 avaliações, projeções aluno↔aluno (1,45 M arestas) e
-  disciplina↔disciplina.
+  11 avaliações, projeções aluno↔aluno e disciplina↔disciplina. Sem
+  corte, a projeção aluno↔aluno teria 1,45 M arestas; com o `min_weight`
+  da configuração ficam 476.591 (simples) e 608.558 (alocação de
+  recursos).
 - `oulad_module_presentation` — base inteira, 22.425 alunos, 22
   disciplinas; projeções **de disciplina** (as de aluno não cabem).
-- `oulad_module_presentation_null0..2` — réplicas nulas (A-08), a linha
+- `oulad_module_presentation_null0..4` — réplicas nulas (A-08), a linha
   de base contra a qual a spec B-06 mede a modularidade.
 - `oulad_vle_bbb_2013j` — coorte BBB 2013J **pelo AVA** (A-09): 1.870
   alunos × 320 recursos, projeção aluno↔aluno com 1.746.901 arestas. É o
@@ -88,7 +88,9 @@ Em `data/processed`, prontos para `--root`:
 - `oulad_vle_bbb_2013j_null0..4` — réplicas nulas dele.
 
 **Leia a A-08 antes de reportar qualquer Q.** Na projeção aluno↔aluno de
-`oulad_module_presentation`, o Q real (0,77) é menor que o das réplicas
-embaralhadas — não há estrutura a reportar ali, e isso é o resultado.
+`oulad_module_presentation` (medida numa amostra de 3.000 alunos,
+porque a projeção inteira não cabe na memória), o Q real (0,77) é menor
+que o das réplicas embaralhadas — não há estrutura a reportar ali, e isso
+é o resultado.
 Para comunidades de alunos, use `oulad_vle_bbb_2013j` (A-09), onde o Q
 real fica ~5× acima do nulo.

@@ -5,7 +5,7 @@ derivado no papel (ver o README de lá). Comparar a implementação com a
 fixture gerada pelo NetworkX seria comparar duas bibliotecas; comparar
 com a derivação à mão é verificar o algoritmo.
 
-O teste da A-05 continua ``xfail(strict=True)`` até a spec fechar.
+A A-05 está fechada: a comparação com o NetworkX roda sem ``xfail``.
 """
 
 from __future__ import annotations

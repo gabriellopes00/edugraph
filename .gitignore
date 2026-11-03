@@ -18,6 +18,13 @@ dist/
 data/raw/
 data/interim/
 data/processed/
+# Saída descartável do pipeline sugerida no README (`run ... --out saida-teste`)
+saida-teste/
+
+# Figuras do artigo e capturas de tela: geradas sob demanda, não versionadas
+# (decisão de 31/10/2026: o grupo mostra os resultados na própria interface)
+results/figures/
+docs/artigo/indice-figuras.md
 
 # Front-end (React + Vite, ADR-0005)
 frontend/node_modules/

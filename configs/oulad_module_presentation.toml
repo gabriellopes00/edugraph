@@ -5,8 +5,7 @@
 # Com V = módulo, a projeção disciplina↔disciplina degenera no grafo
 # completo: toda intermediação vira zero e não há gargalo a identificar.
 # Isso já é observável em data/fixtures/synthetic_v1 (ver o REFERENCE.md
-# de lá) e a configuração oulad_module_baseline.toml existe justamente
-# para reportar a degeneração como resultado.
+# de lá), que usa V = módulo e fica como registro da degeneração.
 #
 # Exige o OULAD baixado em data/raw/oulad (ver README).
 
@@ -22,7 +21,7 @@ cache_dir = "data/interim"
 dataset = "oulad_module_presentation"
 granularity = "module_presentation"
 edge_criterion = "score_threshold"
-threshold = 40.0   # limiar de aprovação do OULAD; conferir em A-02
+threshold = 40.0   # limiar de aprovação do OULAD (conferido na A-02)
 
 # Medido em 18/09/2026 (A-06): 22.425 alunos, 22 disciplinas, 24.500
 # arestas; 91,8% dos alunos cursam **um único módulo** (grau mediano 1).

@@ -1,1 +1,0 @@
-Recursos do ava de oulad_vle_bbb_2013j ordenados pela intermediação na projeção discipline_simple (weight_mode = inverse, estimativa com k = 200). Quanto maior a barra, mais caminhos mínimos entre outras disciplinas passam por ela. Spec C-07.

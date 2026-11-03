@@ -30,7 +30,7 @@ chegou agora, ou quem travou numa palavra lendo uma spec.
 
 ### [`adr/`](adr/README.md) — decisões de arquitetura
 
-Onze ADRs no formato MADR curto. Só decisões que divergem ou detalham as
+Treze ADRs no formato MADR curto. Só decisões que divergem ou detalham as
 seções 2, 4 e 7 do briefing ganham ADR; divergir do starter kit não
 precisa.
 
@@ -63,8 +63,9 @@ Incluindo a derivação, no papel, dos valores esperados de `tiny_v1`.
 
 - [decisoes-metodologicas.md](artigo/decisoes-metodologicas.md) — o que
   precisa estar escrito, e o que o artigo **não** deve afirmar
-- [indice-figuras.md](artigo/indice-figuras.md) e
-  [indice-tabelas.md](artigo/indice-tabelas.md) — arquivos **gerados**
+- [indice-tabelas.md](artigo/indice-tabelas.md) — arquivo **gerado**. As
+  figuras não são versionadas (decisão de 31/10/2026): `python -m edugraph
+  figures --index` as lista, e os comandos de cada frente as geram sob demanda
 
 ### [`orientador/`](orientador/README.md) — o que se manda para a orientação
 

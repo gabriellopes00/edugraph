@@ -75,6 +75,7 @@ def test_coorte_por_periodo_mantem_todos_os_modulos_do_periodo(bipartite_por_apr
     assert not any(d.endswith("_2024B") for d in periodo.disciplines)
 
 
+@pytest.mark.dataset("synthetic_v1")
 def test_coorte_em_bipartido_por_modulo_aponta_para_a_a03(artifact_roots: ArtifactRoots) -> None:
     """Com granularity='module' a apresentação já se perdeu; a mensagem diz o que fazer."""
     bundle = io.load_bipartite(artifact_roots, "synthetic_v1")

@@ -1,1 +1,0 @@
-Interface do edugraph sobre a base sintética (synthetic_v1, projeção aluno↔aluno): as três comunidades encontradas pelo Louvain (Q = 0,467), cada uma com uma cor e uma forma, correspondem às três áreas plantadas no gerador. Captura da spec C-05.

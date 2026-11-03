@@ -69,7 +69,8 @@ comando.
 
 ## O que foi gerado (20/09/2026)
 
-Em `results/figures/`, versionado, e no índice regenerado:
+Em `results/figures/` (**não versionado desde 31/10/2026**: a pasta está no
+`.gitignore` e as figuras saem sob demanda) e no índice regenerado:
 
 | figura | arquivo | o que mostra |
 |---|---|---|
