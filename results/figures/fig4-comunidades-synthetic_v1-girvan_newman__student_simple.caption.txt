@@ -1,1 +1,0 @@
-Comunidades na projeção student_simple de synthetic_v1, por girvan_newman (Q = 0.4174, 3 comunidades, status ok). Cores da escala cividis, que se distingue também em escala de cinza; a forma do marcador repete a informação da cor. Layout spring com semente 0.

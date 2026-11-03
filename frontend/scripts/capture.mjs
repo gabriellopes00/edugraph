@@ -309,7 +309,8 @@ async function main() {
     });
 
     const carregou = cdp.uma("Page.loadEventFired");
-    await cdp.enviar("Page.navigate", { url: URL_APP });
+    // O laboratório é a aba padrão; as cenas da figura 9 são do explorador, sem o tour de boas-vindas.
+    await cdp.enviar("Page.navigate", { url: `${URL_APP}/?semtour#explorar` });
     await carregou;
     await esperar(cdp, "document.querySelectorAll('select').length >= 2", 15_000, "os seletores");
 

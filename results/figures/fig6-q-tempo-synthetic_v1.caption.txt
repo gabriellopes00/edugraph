@@ -1,1 +1,0 @@
-Modularidade × tempo de execução em synthetic_v1, 2 execuções. Marcador vazado indica execução que não terminou dentro do orçamento (ADR-0006). O mais lento levou 399× o tempo do mais rápido. Escala logarítmica no tempo.

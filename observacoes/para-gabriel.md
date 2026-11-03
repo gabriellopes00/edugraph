@@ -45,6 +45,21 @@ Ver as regras em [`README.md`](README.md).
 - **Como resolver:** citar o `--out` nos comandos do README, ou dizer onde
   eles gravam.
 
+### B-OBS-05 · Informativo: `evaluate.py` ganhou `outcomes_by_group` e `rank_auc`
+
+- **De:** Pedro (Frente A), laboratório ao vivo · **Data:** 31/10/2026
+- **Onde:** `src/edugraph/community/evaluate.py` (funções novas, antes de
+  `unknown_outcomes`) e `tests/lab/test_signals.py`.
+- **O quê:** a conferência dos sinais de risco de evasão e de talento
+  (ADR-0013) cruza grupos de alunos qualquer com o desfecho, e isso mora em
+  `evaluate.py` para respeitar a ADR-0008. `outcomes_by_group` é a versão
+  de `outcome_profile` para grupos que não são comunidades; `rank_auc` é o
+  AUC (Mann-Whitney, empate pela média de postos). Nada existente mudou.
+  Medido: no AVA do OULAD inteiro, risco alto → 46% desistentes e 46%
+  reprovados (AUC 0,79); na coorte, AUC 0,91.
+- **Como resolver:** conferir se concorda com o lugar e a definição; se
+  quiser, reaproveitar `rank_auc` na tabela de validação do capítulo 3.
+
 ## Resolvidas
 
 Nenhuma ainda.

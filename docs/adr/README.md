@@ -26,6 +26,7 @@ banca, a resposta está aqui.
 | [0010](ADR-0010-implementacoes-a-mao.md) | Três implementações à mão, comparadas com o NetworkX | [A][B][C] |
 | [0011](ADR-0011-determinismo.md) | Determinismo: seeds, escrita canônica, versões pinadas | [T] |
 | [0012](ADR-0012-granularidades-do-comportamento.md) | Granularidades do comportamento: o bipartido pelo AVA | [A] |
+| [0013](ADR-0013-laboratorio-ao-vivo.md) | Laboratório ao vivo e leitura dos resultados em linguagem de gente (substitui em parte a 0004) | [T] |
 
 ## As que sustentam o paralelismo
 

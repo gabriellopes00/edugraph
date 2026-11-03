@@ -1,1 +1,0 @@
-Disciplinas de oulad_module_presentation ordenados pela intermediação na projeção discipline_simple (weight_mode = none). Quanto maior a barra, mais caminhos mínimos entre outras disciplinas passam por ela. Spec C-07.

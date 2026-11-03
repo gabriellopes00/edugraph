@@ -29,16 +29,20 @@ testes. **Não espere o usuário pedir e não pergunte se deve fazer.**
   feito`. Se resolve só em parte, atualize o texto do item e deixe-o em
   **Abertas**. Nunca apague itens: "tirar" é mover para **Resolvidas**.
 - **Anotar.** Achou um problema num arquivo de outra frente, ou uma
-  pendência que depende de outra pessoa? **Não corrija: registre** no
-  arquivo do dono, no formato de
+  pendência que depende de outra pessoa? Se a correção é pequena e você
+  está com a mão no arquivo, corrija e avise; se depende de decisão do
+  dono, **registre** no arquivo dele, no formato de
   [`observacoes/README.md`](observacoes/README.md), com caminho, linha,
   evidência e correção sugerida. Pendência da própria pessoa que ficou para
   depois também vira observação no arquivo dela.
 - **Avisar.** Ao terminar, diga ao usuário quais observações foram abertas
   ou fechadas na tarefa.
 
-Só altere arquivo de outra frente se o usuário pedir explicitamente — e,
-nesse caso, deixe uma observação avisando o dono do que mudou.
+**Desde 30/10/2026, os três podem mexer em qualquer parte do sistema**
+(decisão do grupo, registrada na [ADR-0013](docs/adr/ADR-0013-laboratorio-ao-vivo.md)):
+as frentes, os contratos e este arquivo foram montados para a fase de
+arquitetura. Ao mexer em arquivo que outra pessoa mantém, deixe uma
+observação avisando o dono do que mudou.
 
 ## As três regras que não se negociam
 
@@ -71,21 +75,29 @@ Verificado por `tests/contract/test_outcomes_isolation.py`. ADR-0008.
 `edugraph.api` **não se importam**. Elas se comunicam por artefatos em
 disco, através de `edugraph.contracts`.
 
+`edugraph.lab` e `edugraph.reporting` **não são frentes**: compõem as
+frentes pelo registro. A API chama `lab`, nunca uma frente diretamente.
+
 Só dois arquivos são isentos: `edugraph/__main__.py` e
 `edugraph/contracts/registry.py`. Acrescentar um terceiro exige ADR.
 
 Verificado por `tests/contract/test_import_boundaries.py`. ADR-0003.
 
-## Contratos congelados
+## Contratos
 
-`src/edugraph/contracts/` entrou em `main` no dia 0 e **não muda sem ADR
-e aprovação dos três**. Mudar layout, nome de coluna ou semântica de
-campo exige, além disso, subir `SCHEMA_VERSION`.
+`src/edugraph/contracts/` entrou em `main` no dia 0 e ficou **congelado**
+durante a fase de arquitetura. O congelamento acabou em 30/10/2026: mudar
+um contrato não exige mais ADR nem a aprovação dos três.
 
-Antes de propor mudança de contrato, confira se o que você precisa não
-cabe em `params` ou em `meta.stats` — os dois são dicionários livres e
-existem para isso. A pergunta que decide: *outra frente precisa saber
-disso?* Se não precisa, não é contrato.
+O que continua valendo, porque as fixtures e os artefatos em disco
+dependem disso: mudar layout, nome de coluna ou semântica de campo
+**sobe `SCHEMA_VERSION`** e regenera as fixtures (versão nova, como em
+`synthetic_v2`). Os testes de `tests/contract/` seguem rodando e protegem
+as três regras acima.
+
+Antes de mudar o contrato, confira se o que você precisa não cabe em
+`params` ou em `meta.stats` — os dois são dicionários livres e existem
+para isso.
 
 ## Fixtures são imutáveis
 
@@ -103,6 +115,8 @@ pip install -e ".[dev]"
 
 python -m edugraph validate --root data/fixtures
 python -m edugraph api serve --root data/processed --root data/fixtures
+#   com o front compilado (cd frontend && npm install && npm run build),
+#   http://127.0.0.1:8000/ abre o laboratório ao vivo e o explorador
 python -m edugraph run configs/synthetic_v1.toml --dry-run
 python scripts/make_fixtures.py
 

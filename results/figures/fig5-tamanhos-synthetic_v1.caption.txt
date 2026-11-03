@@ -1,1 +1,0 @@
-Distribuição de tamanhos das comunidades, um painel por algoritmo, sobre 2 partições de synthetic_v1. Tamanhos em ordem decrescente; 0 comunidades de um nó só no total. Cores da escala cividis.

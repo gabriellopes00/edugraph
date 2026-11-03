@@ -1,1 +1,0 @@
-Os 1.870 alunos da coorte BBB 2013J ligados pelo uso do AVA (1,75 milhão de arestas), desenhados pelo esqueleto da API: as 2 ligações mais fortes de cada aluno, como diz a faixa de aviso. Tamanho pelo autovetor; cores pelo Louvain (Q = 0,039, estrutura fraca). Captura da spec C-05.

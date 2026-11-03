@@ -30,21 +30,51 @@ python -m venv .venv
 pip install -e ".[dev]"
 ```
 
+**Windows:** clone numa pasta de caminho curto (por exemplo
+`C:\tcc\`). O caminho mais longo do repositório tem 93 caracteres, e o
+Windows recusa arquivos acima de 260; numa pasta funda, o `git clone`
+termina com `Filename too long` e a árvore fica incompleta. Se não der
+para encurtar, rode antes `git config --global core.longpaths true`.
+
 Confira que está tudo de pé:
 
 ```bash
 python -m edugraph validate --root data/fixtures
-pytest
+pytest -m "not slow"        # ~20 s: o que a CI roda
+pytest                      # ~1 min: inclui o Girvan-Newman completo
 ```
 
-Esperado: os três datasets de fixture validando. Em 20/10/2026,
-`pytest -m "not slow" -q` retornou **358 testes passando, 1 pulado,
-0 `xfail` e 1 desmarcado** pelo filtro `not slow`. O teste pulado depende
-de `oulad_module_presentation`, ausente nas fixtures; as specs da Frente C
-estão implementadas. Houve 1 aviso de depreciação do TestClient/HTTPX.
+Esperado: os três datasets de fixture validando. Em 30/10/2026, num
+clone limpo (Windows 11, Python 3.14), `pytest -m "not slow"` retornou
+**358 testes passando, 1 pulado e 1 desmarcado** em 17 s, e `pytest`
+inteiro, **359 passando e 1 pulado** em 59 s. O teste pulado depende de
+`oulad_module_presentation`, que só existe depois do download do OULAD.
+Há 1 aviso de depreciação do TestClient/HTTPX, sem efeito.
 
-Requer **Python 3.11+**. O front-end requer **Node 20 (>=20.19), 22 (>=22.13) ou >=24** (ESLint 10), e é opcional:
-a análise inteira funciona sem ele.
+Requer **Python 3.11+** (a CI roda 3.11 e 3.13). O front-end requer
+**Node 20 (>=20.19), 22 (>=22.13) ou >=24** (ESLint 10), e é opcional:
+a análise inteira funciona sem ele. Sem o front compilado, `GET /`
+responde um JSON explicando como gerá-lo; a API e `/docs` funcionam.
+
+## Caminho rápido: só o sintético
+
+**Nada do OULAD é necessário** para ver o sistema funcionando. Os resultados
+do OULAD (`data/processed/`) levam horas para gerar e ficam fora do git; sem
+essa pasta o sistema simplesmente não lista esses datasets. O que roda sem
+eles, em poucos minutos:
+
+```bash
+python -m edugraph validate --root data/fixtures   # artefatos de fixture
+pytest -m "not slow"                               # a suíte (o teste do OULAD é pulado)
+python -m edugraph api serve                       # sem --root: usa data/fixtures
+```
+
+Com o front compilado, **http://127.0.0.1:8000/** abre o laboratório, que
+gera a turma de Computação na hora (dados fictícios, 0,2 a 3 s por rodada),
+e o explorador, com `synthetic_v1`, `synthetic_v2` e `tiny_v1`. Se existir
+`data/processed/` (por exemplo, o ZIP de resultados do OULAD descompactado
+na raiz do repositório), ele entra sozinho na lista, sem flag nenhuma.
+Coberto por `tests/api/test_raiz_ausente.py`.
 
 ## O que dá para fazer agora
 
@@ -60,6 +90,11 @@ python -m edugraph api serve --root data/fixtures
 
 # ver o que o pipeline faria
 python -m edugraph run configs/synthetic_v1.toml --dry-run
+
+# rodar o pipeline inteiro (dados → comunidades → centralidade) numa
+# pasta descartável: ~70 s, quase todos do Girvan-Newman
+python -m edugraph run configs/synthetic_v1.toml --out saida-teste
+python -m edugraph validate --root saida-teste
 
 # regenerar as fixtures (byte a byte idênticas)
 python scripts/make_fixtures.py --force
@@ -77,10 +112,47 @@ python -m edugraph community --help
 python -m edugraph centrality --help
 ```
 
-As Frentes **A** (dados e projeções) e **B** (comunidades) estão
-implementadas. Os comandos da Frente C ainda respondem `não implementado`
-com o id da spec correspondente; as implementações são as specs de
-[`docs/specs/`](docs/specs/README.md).
+As três frentes estão implementadas: as 23 specs de
+[`docs/specs/`](docs/specs/README.md) estão fechadas.
+
+## A interface: o grafo se monta na sua frente
+
+Precisa de Node (versão abaixo). Compile uma vez e suba a API:
+
+```bash
+cd frontend
+npm install
+npm run build
+cd ..
+python -m edugraph api serve --root data/processed --root data/fixtures
+```
+
+Abra **http://127.0.0.1:8000/**. Há duas abas:
+
+- **Laboratório ao vivo** (abre primeiro). Gera uma turma de Computação
+  (dados fictícios, com áreas plantadas) ou amostra um dataset em disco,
+  roda Louvain ou Girvan–Newman **de verdade**, em menos de alguns
+  segundos, e conta a montagem em quatro etapas: matrículas → projeção →
+  algoritmo, movimento a movimento → resultado. Dá para escolher o número
+  de alunos, a mistura entre áreas, projetar alunos ou disciplinas, trocar
+  a ponderação, cortar ligações fracas e **sortear outra turma**. **Nada
+  roda sozinho:** a rede só é montada quando você aperta ▶, e mudar um
+  controle espera o próximo ▶. Na primeira visita, um **tour** de 1
+  minuto explica a tela (o botão *Tour* no topo o repete; `?tour` na URL
+  o força e `?semtour` o desliga). Espaço toca e pausa; ← e → andam quadro a quadro; **F** (ou o botão
+  *Apresentar*) vira tela cheia com letra maior.
+- **Explorar resultados** (`#explorar`). Os resultados do OULAD já
+  calculados, com comunidades nomeadas ("Módulos BBB · GGG", "Pouco
+  engajados"), papel de cada nó, contornos e o desfecho revelado.
+
+No resultado, as comunidades têm nome e o texto diz o que o grafo mostra.
+Duas revelações mostram o que o grafo **nunca viu**: as áreas que o
+gerador plantou e o desfecho dos alunos (aprovado, reprovado…).
+
+Sem o front compilado, `GET /` responde um JSON; a API e `/docs`
+funcionam do mesmo jeito. Detalhes e roteiro de apresentação em
+[`frontend/README.md`](frontend/README.md); a decisão em
+[ADR-0013](docs/adr/ADR-0013-laboratorio-ao-vivo.md).
 
 ## Como o projeto está organizado
 
@@ -151,8 +223,8 @@ Comece por [`docs/README.md`](docs/README.md). Os atalhos:
 
 - [Visão geral da arquitetura](docs/arquitetura/visao-geral.md)
 - [Como as frentes não se bloqueiam](docs/arquitetura/paralelismo.md)
-- [As 21 specs](docs/specs/README.md)
-- [As 11 ADRs](docs/adr/README.md)
+- [As 23 specs](docs/specs/README.md)
+- [As 13 ADRs](docs/adr/README.md)
 - [Os contratos de dados](docs/contratos/README.md)
 - [Estratégia de testes](docs/testes/estrategia.md)
 

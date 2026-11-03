@@ -16,12 +16,14 @@
  * avisa.
  */
 
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import cytoscape, { type Core, type ElementDefinition, type Position } from "cytoscape";
 import fcose from "cytoscape-fcose";
 
 import { communityOrder, communityStyle, themeColor } from "../palette";
-import type { CentralityMetric, GraphResponse } from "../types";
+import type { CentralityMetric, GraphResponse, RoleId } from "../types";
+import { useCascas, type Casca } from "./cascas";
+import { CLASSES_DA_SELECAO, destacarSelecao, enquadrarGrupo, estiloDaSelecao } from "./selecao";
 
 cytoscape.use(fcose);
 
@@ -39,8 +41,12 @@ export const MAX_EDGES_CONFORTAVEL = 3000;
 const MAX_DISCIPLINAS_ROTULADAS = 600;
 const MAX_ALUNOS_ROTULADOS = 40;
 
+/** Acima disto, o contorno das comunidades custa caro e deixa de dizer algo. */
+const MAX_NOS_COM_BOLHAS = 300;
+
 /** Vizinhos do nó selecionado com nome visível; acima disto, só o painel lista. */
-const MAX_VIZINHOS_ROTULADOS = 15;
+/** Ao escolher um nó, a câmera não passa deste zoom, mesmo com poucos vizinhos. */
+const ZOOM_MAX_SELECAO = 2.6;
 
 /** Mesma pilha de fontes do CSS: o rótulo do canvas combina com a interface. */
 const FONTE = '"Source Sans 3", system-ui, sans-serif';
@@ -113,6 +119,17 @@ interface GraphViewProps {
   /** Tema atual: o canvas relê os tokens CSS quando ele muda. */
   tema: "light" | "dark";
   onSelect: (nodeId: string | null) => void;
+  /** Comunidade em foco (mouse na legenda): as outras esmaecem. */
+  foco?: number | null;
+  /** Só os nós com este papel ficam em destaque. */
+  papel?: RoleId | null;
+  papeis?: Record<string, { role: RoleId }> | null;
+  /** Alunos em destaque (filtro de sinais); os demais ficam apagados. */
+  realce?: ReadonlySet<string> | null;
+  /** Nome por comunidade, escrito no contorno. */
+  nomes?: Record<number, string>;
+  /** Contorno translúcido em volta de cada comunidade. */
+  bolhas?: boolean;
 }
 
 /** Tamanho de cada nó pela métrica, em escala linear entre o menor e o maior score. */
@@ -200,6 +217,7 @@ function estilo(graph: GraphResponse, zoomReal: () => number): cytoscape.Stylesh
     edge: themeColor("--edge", "#1A1915"),
     sheet: themeColor("--sheet", "#FFFFFF"),
     text: themeColor("--text", "#1A1915"),
+    destaque: themeColor("--focus", "#1F5FBF"),
   };
   return [
     { selector: "node", style: {
@@ -214,7 +232,7 @@ function estilo(graph: GraphResponse, zoomReal: () => number): cytoscape.Stylesh
       "border-color": claro ? cor.text : cor.sheet,
       "overlay-opacity": 0, "outline-color": cor.text,
       "outline-width": 0, "outline-offset": px(6),
-      "transition-property": "width, height, opacity", "transition-duration": DURACAO_MS,
+      "transition-property": "width, height, opacity, background-color", "transition-duration": DURACAO_MS,
     } as unknown as cytoscape.Css.Node },
     { selector: 'node[kind = "discipline"]', style: {
       "background-color": cor.discipline, shape: "round-rectangle",
@@ -231,16 +249,13 @@ function estilo(graph: GraphResponse, zoomReal: () => number): cytoscape.Stylesh
       "transition-property": "opacity", "transition-duration": DURACAO_MS,
     } as unknown as cytoscape.Css.Edge },
     { selector: ".apagado", style: { opacity: 0.06 } },
-    { selector: "node.realce, node.rotulo, node:selected", style: {
+    { selector: "node.realce, node.rotulo", style: {
       label: "data(label)", "min-zoomed-font-size": 0, "text-opacity": 1,
       "font-size": px(ROTULO_TELA), "z-index": 10,
     } as unknown as cytoscape.Css.Node },
     { selector: "node.realce", style: { "outline-width": px(1), "outline-opacity": 0.5 } as unknown as cytoscape.Css.Node },
-    { selector: "edge.vizinho", style: { opacity: (e: cytoscape.EdgeSingular) => 0.3 + relativo(e) * 0.55 } as unknown as cytoscape.Css.Edge },
-    { selector: "node:selected", style: {
-      "outline-width": px(1.5), "outline-opacity": 1,
-      "font-weight": 700, "text-margin-y": px(17), "z-index": 20,
-    } as unknown as cytoscape.Css.Node },
+    { selector: "node.realce-papel", style: { "outline-width": px(2.5), "outline-opacity": 0.9, "z-index": 10 } as unknown as cytoscape.Css.Node },
+    ...estiloDaSelecao({ destaque: cor.destaque, px, zoom, relativo, classeRotulo: "rotulo" }),
   ];
 }
 
@@ -341,11 +356,12 @@ export interface GraphViewHandle {
 }
 
 export const GraphView = forwardRef<GraphViewHandle, GraphViewProps>(function GraphView(
-  { graph, membership, sizeBy, selected, tema, onSelect },
+  { graph, membership, sizeBy, selected, tema, onSelect, foco = null, papel = null, papeis = null, realce = null, nomes, bolhas = false },
   ref,
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<Core | null>(null);
+  const [cy, setCy] = useState<Core | null>(null);
   // O callback mais recente sem recriar o Cytoscape quando o pai re-renderiza.
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
@@ -419,6 +435,7 @@ export const GraphView = forwardRef<GraphViewHandle, GraphViewProps>(function Gr
     });
 
     cyRef.current = cy;
+    setCy(cy);
     return () => {
       cy.off("zoom", aoMudarZoom);
       if (quadro) cancelAnimationFrame(quadro);
@@ -427,6 +444,7 @@ export const GraphView = forwardRef<GraphViewHandle, GraphViewProps>(function Gr
       });
       cy.destroy();
       cyRef.current = null;
+      setCy(null);
     };
   }, [graph]);
 
@@ -473,27 +491,78 @@ export const GraphView = forwardRef<GraphViewHandle, GraphViewProps>(function Gr
     });
   }, [graph, sizeBy]);
 
-  // 4. Seleção vinda de fora (painel) e destaque da vizinhança.
+  // 4. Seleção vinda de fora (painel), foco por comunidade, filtro de papel
+  // e destaque da vizinhança. Só classes: nada é refeito.
   useEffect(() => {
     const cy = cyRef.current;
     if (!cy) return;
     cy.batch(() => {
-      cy.elements().removeClass("apagado vizinho rotulo");
+      cy.elements().removeClass(`apagado rotulo realce-papel ${CLASSES_DA_SELECAO}`);
       cy.nodes(":selected").unselect();
-      if (!selected) return;
-      const alvo = cy.getElementById(selected);
-      if (alvo.empty()) return;
-      alvo.select();
-      const vizinhanca = alvo.closedNeighborhood();
-      vizinhanca.addClass("vizinho");
-      // Nome dos vizinhos só em vizinhança pequena: com dezenas, os rótulos
-      // se sobrepõem, e a lista completa já está no painel do nó.
-      if (vizinhanca.nodes().length <= MAX_VIZINHOS_ROTULADOS + 1) {
-        vizinhanca.nodes().addClass("rotulo");
+      if (!selected && foco !== null && membership) {
+        const membros = (id: string) => membership[id] === foco;
+        cy.nodes().forEach((n) => {
+          if (!membros(n.id())) n.addClass("apagado");
+        });
+        cy.edges().forEach((e) => {
+          if (!(membros(e.source().id()) && membros(e.target().id()))) e.addClass("apagado");
+        });
       }
-      cy.elements().difference(vizinhanca).addClass("apagado");
+      if (!selected && papel && papeis) {
+        cy.nodes().forEach((n) => {
+          if (papeis[n.id()]?.role === papel) n.addClass("realce-papel");
+          else n.addClass("apagado");
+        });
+        cy.edges().addClass("apagado");
+      }
+      if (!selected && realce) {
+        cy.nodes().forEach((n) => {
+          if (realce.has(n.id())) n.addClass("realce-papel");
+          else n.addClass("apagado");
+        });
+        cy.edges().addClass("apagado");
+      }
+      // Só os vizinhos de ligação mais forte mostram o nome: com dezenas, os
+      // rótulos se sobrepõem, e a lista completa está no painel do nó.
+      if (selected) destacarSelecao(cy, selected, "rotulo");
     });
-  }, [graph, selected]);
+  }, [graph, selected, foco, papel, papeis, realce, membership]);
+
+  // 4b. A câmera acompanha a seleção: enquadra o nó com os vizinhos e, ao
+  // soltar, volta ao grafo inteiro. Só reage a mudar de seleção.
+  const selecionadoAntes = useRef<string | null>(null);
+  useEffect(() => {
+    const cy = cyRef.current;
+    const antes = selecionadoAntes.current;
+    selecionadoAntes.current = selected;
+    if (!cy) return;
+    if (selected) {
+      const alvo = cy.getElementById(selected);
+      if (alvo.nonempty()) enquadrarGrupo(cy, alvo.closedNeighborhood().nodes(), ZOOM_MAX_SELECAO, DURACAO_ZOOM_MS * 2);
+    } else if (antes) {
+      enquadrar(cy);
+    }
+  }, [selected]);
+
+  // 5. Contornos das comunidades, só em grafo pequeno.
+  const cascas = useMemo<Casca[]>(() => {
+    if (!bolhas || !membership || graph.nodes.length > MAX_NOS_COM_BOLHAS) return [];
+    const ordem = communityOrder(membership);
+    const grupos = new Map<number, string[]>();
+    for (const [no, comunidade] of Object.entries(membership)) {
+      const lista = grupos.get(comunidade) ?? [];
+      lista.push(no);
+      grupos.set(comunidade, lista);
+    }
+    return [...grupos]
+      .filter(([, ids]) => ids.length >= 2)
+      .map(([comunidade, ids]) => ({
+        ids,
+        cor: communityStyle(ordem.get(comunidade) ?? 0).color,
+        rotulo: nomes?.[comunidade],
+      }));
+  }, [bolhas, membership, graph, nomes]);
+  useCascas(cy, cascas, tema);
 
   const pesado = graph.edges.length > MAX_EDGES_CONFORTAVEL;
   const { truncation } = graph;

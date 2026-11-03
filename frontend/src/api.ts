@@ -15,6 +15,11 @@ import type {
   DatasetListResponse,
   GraphResponse,
   HealthResponse,
+  InsightResponse,
+  LabOptions,
+  LabRequest,
+  LabRun,
+  OutcomesResponse,
   PartitionResponse,
 } from "./types";
 
@@ -52,8 +57,11 @@ function errorDetail(detail: unknown, fallback: string): string {
   return messages.join("; ") || fallback;
 }
 
-async function get<T>(path: string): Promise<T> {
-  const response = await fetch(path, { headers: { Accept: "application/json" } });
+async function send<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const response = await fetch(path, {
+    ...init,
+    headers: { Accept: "application/json", ...(init.headers as Record<string, string>) },
+  });
 
   if (!response.ok) {
     let detail = response.statusText;
@@ -68,6 +76,15 @@ async function get<T>(path: string): Promise<T> {
 
   return (await response.json()) as T;
 }
+
+const get = <T>(path: string) => send<T>(path);
+
+const post = <T>(path: string, body: unknown) =>
+  send<T>(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
 
 export const api = {
   health: () => get<HealthResponse>("/health"),
@@ -99,6 +116,24 @@ export const api = {
     get<PartitionResponse>(
       `/datasets/${encodeURIComponent(dataset)}/communities/${encodeURIComponent(artifactId)}`,
     ),
+
+  /** Nome das comunidades, papel dos nós e frases-resumo de uma partição em disco. */
+  insight: (dataset: string, artifactId: string) =>
+    get<InsightResponse>(
+      `/datasets/${encodeURIComponent(dataset)}/communities/${encodeURIComponent(artifactId)}/insight`,
+    ),
+
+  /** Desfecho por comunidade — a revelação a posteriori (ADR-0008). */
+  outcomes: (dataset: string, artifactId: string) =>
+    get<OutcomesResponse>(
+      `/datasets/${encodeURIComponent(dataset)}/communities/${encodeURIComponent(artifactId)}/outcomes`,
+    ),
+
+  /** Fontes e limites do laboratório. */
+  labOptions: () => get<LabOptions>("/lab/options"),
+
+  /** Monta a rede na hora, com o algoritmo de verdade, e devolve o passo a passo. */
+  labRun: (request: Partial<LabRequest>) => post<LabRun>("/lab/run", request),
 
   /** Ranking de uma métrica. `top` limita às N primeiras posições. */
   centrality: (dataset: string, projectionId: string, metric: CentralityMetric, top?: number) =>

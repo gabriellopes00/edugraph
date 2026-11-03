@@ -1,1 +1,0 @@
-Grafo bipartido de oulad_bbb_2013j: 1706 alunos, 11 disciplinas e 14180 arestas (critério score_threshold, limiar 40). Para legibilidade, a figura mostra uma amostra determinística de 300 alunos (semente 0) e todas as suas arestas; as estatísticas do texto referem-se ao grafo completo.

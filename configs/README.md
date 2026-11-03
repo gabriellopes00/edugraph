@@ -16,6 +16,7 @@ python -m edugraph run configs/synthetic_v1.toml --from community --dry-run
 | `synthetic_v1.toml` | gerador | `module` | roda em qualquer máquina, sem download; é o que a CI usa |
 | `oulad_module_presentation.toml` | OULAD | `module_presentation` | granularidade recomendada pela decisão D1 (22 nós) |
 | `oulad_cohort_bbb_2013j.toml` | OULAD | `assessment` | uma coorte, para viabilizar o Girvan-Newman |
+| `oulad_vle_bbb_2013j.toml` | OULAD | recurso do AVA | comunidades de alunos: o bipartido com sinal acima do modelo nulo (A-09) |
 
 ## Como acrescentar uma configuração
 

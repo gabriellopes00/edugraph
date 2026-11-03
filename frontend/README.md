@@ -21,6 +21,8 @@ npm install
 npm run dev        # servidor de desenvolvimento em :5173, com proxy para :8000
 npm run build      # compila para ../src/edugraph/api/static/
 npm run typecheck  # tsc sem emitir
+npm run lint       # eslint, sem avisos
+npm test           # cliente da API e lógica da animação
 ```
 
 Em desenvolvimento, suba os dois:
@@ -33,6 +35,82 @@ npm run dev                                          # terminal 2
 O Vite encaminha `/health`, `/datasets` e `/openapi.json` para a API, de
 modo que o front usa caminhos relativos nos dois modos e não precisa
 saber onde está rodando.
+
+## Laboratório ao vivo e leitura dos resultados (ADR-0013)
+
+A aba **Laboratório ao vivo** chama `POST /lab/run`, que monta a rede na
+hora e devolve o grafo **com o rastro do algoritmo**; a tela anima o que
+aconteceu. A lógica da animação é pura e testada
+(`src/lab/frames.ts`, `tests/frames.test.mjs`); o canvas só liga e
+desliga classes (`components/LabCanvas.tsx`).
+
+| Etapa | O que aparece | De onde vem |
+|---|---|---|
+| 1 · Matrículas | alunos à esquerda, disciplinas à direita, ligações surgindo | `bipartite` |
+| 2 · Projeção | disciplinas somem; alunos se ligam por disciplinas em comum | `projection` |
+| 3 · Algoritmo | Louvain: cada nó escolhe um grupo; Girvan–Newman: ligações-ponte somem em vermelho; Q ao vivo | `louvain.moves` / `girvan_newman.removed` |
+| 4 · Resultado | grupos com nome e contorno, papéis, **perfis dos alunos (risco de evasão, talentos)**, revelações | `insight`, `insight.signals`, `reveal` |
+
+**A rede só roda ao apertar ▶** (decisão do grupo): abrir a tela não
+chama o servidor, e mudar um controle depois de montar apenas mostra
+"Você mudou a configuração" até o próximo ▶, porque o visitante costuma
+mexer em mais de um antes de querer rodar de novo
+(`src/lab/pedido.ts`: `acaoDoTocar`).
+
+Controles: espaço (tocar/pausar, ou montar), ← → (quadro a quadro),
+Home/End, `+` `-` `0` (zoom), **F** (apresentação).
+`prefers-reduced-motion` pula direto para o resultado.
+
+**Clicar num nó** (`components/selecao.ts`, no laboratório e no explorador):
+o nó cresce e ganha um halo, as ligações dele ficam grossas e na cor de
+destaque (mais grossas quanto maior o peso), os vizinhos ganham contorno e
+só os 12 de ligação mais forte mostram o nome; o resto esmaece e a câmera
+enquadra o nó com os vizinhos. Soltar a seleção volta ao grafo inteiro.
+
+### Tour de boas-vindas
+
+`src/tour/`: `Tour.tsx` escurece a tela, acende o alvo (`data-tour="..."`)
+e explica num balão; no celular vira uma folha no pé da tela. Os textos e
+alvos estão todos em `passos.ts`; a lógica pura (visto/não visto, passos
+com alvo, posição do balão), em `estado.ts`, testada em
+`tests/tour.test.mjs`.
+
+| Tour | Quando abre | Passos |
+|---|---|---|
+| `lab` | na primeira visita ao laboratório | boas-vindas, abas, turma, rede, algoritmo, etapas, grafo, narração, ▶ |
+| `resultado` | convite no painel do **primeiro** resultado; depois, pelo botão *Entender o resultado* | resumo, grupos, perfis, revelar |
+| `explorador` | na primeira visita ao explorador | boas-vindas, dados, projeção, comunidades, leitura, grafo |
+
+O "já visto" fica no `localStorage` (`edugraph.tour.v1.<nome>`); sem ele
+(janela privada) o tour só aparece de novo. `?tour` força o do
+laboratório; `?semtour` desliga todos — `npm run capture` o usa, para as
+capturas da figura 9 saírem sem o tour por cima.
+
+No explorador, a **Leitura** (`/datasets/{d}/communities/{id}/insight`)
+dá nome às comunidades e papel aos nós; passar o mouse na legenda destaca
+o grupo, e *Revelar o desfecho* cruza o grupo com `outcomes.csv`
+(`/outcomes`) — o grafo nunca o viu (ADR-0008).
+
+### Roteiro de apresentação (≈ 8 minutos)
+
+1. **Laboratório, turma padrão, Louvain.** Abra com `?tour` se quiser
+   mostrar o tour; aperte ▶ e deixe tocar: matrículas → projeção →
+   grupos nascendo, com o Q subindo. Aponte as três cores.
+2. **Resultado.** Leia os nomes ("o algoritmo não sabia das áreas").
+   Marque *As áreas que o gerador plantou*: "acertou X% dos alunos".
+3. **Girvan–Newman**, mesma turma. Compare tempo e Q na tabela "mesma
+   turma, os dois algoritmos".
+4. **Mistura entre áreas** a 50%, e *Sortear nova turma*: mostre que os
+   grupos ficam difíceis de achar e que o Girvan–Newman se perde primeiro.
+5. **Fonte:** `oulad_vle_bbb_2013j`. Q ≈ 0: "o comportamento real é
+   parecido; o método diz isso com honestidade". Use *Manter só as 30%
+   mais fortes*.
+6. **Explorar resultados.** O AVA inteiro, *Revelar o desfecho*: o grupo
+   "Pouco engajados" concentra 72% de reprovados e desistentes.
+7. **Perfis dos alunos.** Em qualquer resultado de alunos: *Quem merece
+   atenção* e *Possíveis talentos*, cada um com o porquê. Clique num
+   perfil para ver no grafo e em *Revelar o desfecho* para conferir: no
+   AVA, 92% dos de risco alto reprovaram ou desistiram (42% da turma).
 
 ## O que a interface faz (spec C-05)
 
@@ -168,6 +246,7 @@ python -m edugraph api serve --root data/processed --root data/fixtures
 ## Capturas para o artigo (figura 9)
 
 `npm run capture` gera as capturas da interface em `results/figures/`
+(pasta ignorada pelo git desde 31/10/2026: as capturas não são versionadas)
 (`ui-*.png`, 3200 × 2000, com a legenda em `ui-*.caption.txt`). O script
 (`scripts/capture.mjs`) abre a interface num Edge ou Chrome headless, monta
 cada cena pelos próprios controles da tela e fotografa. Não instala nada: usa
