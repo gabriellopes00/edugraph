@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 
 import { communityOrder, communityStyle, themeColor } from "../palette";
 import { SILHUETAS } from "./CommunityLegend";
-import type { CentralityMetric, GraphResponse } from "../types";
+import type { CentralityMetric, GraphResponse, Insight, RoleId, SinalDoAluno, Sinais } from "../types";
 
 const METRICAS: { id: CentralityMetric; nome: string }[] = [
   { id: "degree", nome: "Grau" },
@@ -28,6 +28,8 @@ interface NodePanelProps {
   membership: Record<string, number> | null;
   nodeId: string;
   onSelect: (nodeId: string | null) => void;
+  /** Leitura do resultado: dá nome à comunidade e papel ao nó. */
+  leitura?: Insight | null;
 }
 
 /**
@@ -44,7 +46,7 @@ function posicao(scores: Record<string, number>, nodeId: string): number {
   return ordenados.findIndex(([id]) => id === nodeId) + 1;
 }
 
-export function NodePanel({ graph, membership, nodeId, onSelect }: NodePanelProps) {
+export function NodePanel({ graph, membership, nodeId, onSelect, leitura }: NodePanelProps) {
   const no = graph.nodes.find((node) => node.id === nodeId);
   if (!no) return null;
 
@@ -66,6 +68,9 @@ export function NodePanel({ graph, membership, nodeId, onSelect }: NodePanelProp
   };
   const comunidade = membership?.[nodeId];
   const estiloComunidade = estiloDe(nodeId);
+  const nomeDaComunidade = leitura?.communities.find((c) => c.id === comunidade)?.name;
+  const papel = leitura?.roles[nodeId];
+  const sinal = leitura?.signals?.students[nodeId];
   // Sem partição, o nó usa a cor e a forma do tipo (aluno / disciplina), como no grafo.
   const disciplina = no.kind === "discipline";
   const corNo =
@@ -90,8 +95,10 @@ export function NodePanel({ graph, membership, nodeId, onSelect }: NodePanelProp
       <h2 className="node-panel-nome">{no.label}</h2>
       <p className="comunidade-chip">
         <Silhueta forma={formaNo} cor={corNo} tamanho={15} />
-        {estiloComunidade ? <>Comunidade {comunidade} · {Object.values(membership ?? {}).filter(c => c === comunidade).length} de {graph.nodes.length} nós</> : "sem comunidade"}
+        {estiloComunidade ? <>{nomeDaComunidade ?? `Comunidade ${comunidade}`} · {Object.values(membership ?? {}).filter(c => c === comunidade).length} de {graph.nodes.length} nós</> : "sem comunidade"}
       </p>
+      {papel && leitura && <PapelDoNo papel={papel.role} leitura={leitura} />}
+      {sinal && leitura?.signals && <SinaisDoAluno sinal={sinal} sinais={leitura.signals} />}
       <h3>Centralidade <span>posição entre {graph.nodes.length}</span></h3>
       <div className="metricas">
         {METRICAS.map(({ id, nome }) => {
@@ -173,4 +180,42 @@ function Metrica(props: { nome: string; valor: number | undefined; posicao: numb
       <span className="posicao"><b>{pos}º</b> de {total}</span>
     </div>}
   </div>;
+}
+
+/** O papel do nó na rede, com o que ele quer dizer. */
+function PapelDoNo({ papel, leitura }: { papel: RoleId; leitura: Insight }) {
+  return (
+    <div className={`papel papel-${papel}`}>
+      <span className="papel-selo">{leitura.role_labels[papel]}</span>
+      <span className="papel-ajuda">{leitura.role_help[papel]}</span>
+    </div>
+  );
+}
+
+/** Risco de evasão e selos de talento do aluno, com o porquê de cada um. */
+function SinaisDoAluno({ sinal, sinais }: { sinal: SinalDoAluno; sinais: Sinais }) {
+  const rotulo = sinal.talent ? "Possível talento" : sinais.tier_labels[sinal.tier];
+  return (
+    <div className={`sinal-aluno sinal-${sinal.talent ? "talento" : sinal.tier}`}>
+      <div className="sinal-aluno-topo">
+        <span className="papel-selo">{rotulo}</span>
+        <span className="sinal-risco-valor">risco {Math.round(100 * sinal.risk)}%</span>
+      </div>
+      <div className="sinal-risco-barra" role="img" aria-label={`Risco de evasão: ${Math.round(100 * sinal.risk)}%`}>
+        <span style={{ width: `${100 * sinal.risk}%` }} />
+      </div>
+      {sinal.tags && sinal.tags.length > 0 && (
+        <p className="aluno-tags">
+          {sinal.tags.map((t) => (
+            <span key={t} className="aluno-tag">{sinais.tag_labels[t] ?? t}</span>
+          ))}
+        </p>
+      )}
+      {sinal.why && sinal.why.length > 0 && (
+        <ul className="aluno-porques">
+          {sinal.why.map((f) => <li key={f}>{f}</li>)}
+        </ul>
+      )}
+    </div>
+  );
 }

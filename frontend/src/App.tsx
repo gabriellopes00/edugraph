@@ -5,7 +5,11 @@
  * embutido no código: o que estiver em disco sob as raízes da API
  * aparece aqui.
  *
- * Duas requisições por tela, de propósito:
+ * Duas abas: o **laboratório** (`LabView`), que monta uma rede pequena
+ * na hora e conta a montagem em etapas (ADR-0013), e o **explorador**,
+ * que lê os resultados já calculados em disco.
+ *
+ * Duas requisições por tela no explorador, de propósito:
  *
  * - a **projeção**, com as centralidades embutidas, muda quando muda o
  *   dataset ou a projeção — e só então o grafo é redesenhado;
@@ -13,14 +17,20 @@
  *   re-diagrame o grafo: só os nós mudam de cor, com transição.
  */
 
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 
 import { ApiError, api } from "./api";
-import { CommunityLegend } from "./components/CommunityLegend";
+import { CommunityLegend, LegendaDeDesfecho } from "./components/CommunityLegend";
+import { ControlesZoom } from "./components/ControlesZoom";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { GraphView, type GraphViewHandle } from "./components/GraphView";
+import { LabView } from "./components/LabView";
+import { jaVisto, marcarVisto, opcoesDaUrl, type NomeDoTour } from "./tour/estado";
+import { PASSOS } from "./tour/passos";
+import { Tour } from "./tour/Tour";
 import { NodePanel } from "./components/NodePanel";
+import { idsDoSinal, PainelSinais, type SinalFiltro } from "./components/Sinais";
 import { Seletor } from "./components/Seletor";
 import { StatsBar } from "./components/StatsBar";
 import type {
@@ -28,7 +38,10 @@ import type {
   DatasetSummary,
   GraphResponse,
   HealthResponse,
+  InsightResponse,
+  OutcomesResponse,
   PartitionResponse,
+  RoleId,
 } from "./types";
 
 type Estado<T> =
@@ -42,6 +55,25 @@ const METRICAS: { id: CentralityMetric; nome: string }[] = [
   { id: "eigenvector", nome: "Autovetor" },
 ];
 
+/**
+ * Onde o explorador abre: o primeiro par dataset/projeção que já tem partição
+ * **e** centralidade. Abrir num dataset incompleto mostraria um grafo sem cor
+ * nem tamanho, e é a primeira coisa que a banca veria.
+ */
+function escolhaInicial(lista: DatasetSummary[]): { dataset: string; projecao: string | null } | null {
+  for (const d of lista) {
+    const completas = d.projections.filter(
+      (p) => d.centralities.includes(p) && d.partitions.some((id) => id.endsWith(`__${p}`)),
+    );
+    // Entre as completas, a de alunos primeiro: é a que conta a história (grupos de
+    // alunos); a de disciplinas, em sintético, tem só 7 nós.
+    const completa = completas.find((p) => p === "student_simple") ?? completas.find((p) => p.startsWith("student")) ?? completas[0];
+    if (completa) return { dataset: d.dataset, projecao: completa };
+  }
+  const parcial = lista.find((d) => d.projections.length > 0) ?? lista[0];
+  return parcial ? { dataset: parcial.dataset, projecao: parcial.projections[0] ?? null } : null;
+}
+
 /** Partições da projeção ativa: `<algoritmo>__<projection_id>`, Louvain primeiro. */
 function particoesDa(resumo: DatasetSummary | null, projecao: string | null): string[] {
   if (!resumo || !projecao) return [];
@@ -53,6 +85,19 @@ function particoesDa(resumo: DatasetSummary | null, projecao: string | null): st
 type Tema = "light" | "dark";
 const CHAVE_TEMA = "edugraph-tema";
 
+type Aba = "laboratorio" | "explorar";
+const ABAS: { id: Aba; nome: string; ajuda: string }[] = [
+  { id: "laboratorio", nome: "Laboratório ao vivo", ajuda: "Monta uma rede pequena na hora" },
+  { id: "explorar", nome: "Explorar resultados", ajuda: "Os resultados do OULAD já calculados" },
+];
+
+/** A aba vem do endereço (`#explorar`), para poder abrir e compartilhar direto nela. */
+function abaInicial(): Aba {
+  return window.location.hash === "#explorar" ? "explorar" : "laboratorio";
+}
+
+const PAPEIS: RoleId[] = ["referencia", "conector", "ponte", "periferico"];
+
 /** O atributo já foi posto por `index.html` antes da primeira pintura. */
 function temaInicial(): Tema {
   return document.documentElement.dataset.theme === "light" ? "light" : "dark";
@@ -60,6 +105,50 @@ function temaInicial(): Tema {
 
 export default function App() {
   const [tema, setTema] = useState<Tema>(temaInicial);
+  const [aba, setAba] = useState<Aba>(abaInicial);
+  const [apresentando, setApresentando] = useState(false);
+  /** Tour aberto agora, se houver. O de cada tela abre sozinho na primeira visita. */
+  const [tour, setTour] = useState<NomeDoTour | null>(null);
+  const tourForcado = useRef(false);
+
+  useEffect(() => {
+    const opcoes = opcoesDaUrl(window.location.search);
+    if (opcoes.desligar) return;
+    const nome: NomeDoTour = aba === "laboratorio" ? "lab" : "explorador";
+    const forcar = opcoes.forcar && aba === "laboratorio" && !tourForcado.current;
+    if (!forcar && jaVisto(nome)) return;
+    tourForcado.current = true;
+    // Dá tempo de a tela se montar (e, no explorador, de os cartões chegarem).
+    const espera = window.setTimeout(() => setTour(nome), aba === "laboratorio" ? 500 : 1500);
+    return () => window.clearTimeout(espera);
+  }, [aba]);
+
+  const fecharTour = useCallback((nome: NomeDoTour) => {
+    marcarVisto(nome);
+    setTour(null);
+  }, []);
+
+  const trocarAba = (nova: Aba) => {
+    setAba(nova);
+    window.history.replaceState(null, "", nova === "explorar" ? "#explorar" : "#laboratorio");
+  };
+
+  /** Tela cheia, sem cabeçalho nem rodapé e com letra maior: para a banca. */
+  const alternarApresentacao = useCallback(() => {
+    const entrar = !document.fullscreenElement;
+    setApresentando(entrar);
+    const pedido = entrar
+      ? document.documentElement.requestFullscreen?.()
+      : document.exitFullscreen?.();
+    pedido?.catch(() => {
+      /* sem tela cheia (iframe ou política do navegador): o modo ainda vale na janela */
+    });
+  }, []);
+  useEffect(() => {
+    const aoSair = () => !document.fullscreenElement && setApresentando(false);
+    document.addEventListener("fullscreenchange", aoSair);
+    return () => document.removeEventListener("fullscreenchange", aoSair);
+  }, []);
   const grafoRef = useRef<GraphViewHandle>(null);
   // Timeout que tira a classe de transição do tema; só pode haver um.
   const fimTransicaoTema = useRef(0);
@@ -81,6 +170,13 @@ export default function App() {
   const [selecionado, setSelecionado] = useState<string | null>(null);
   const [grafo, setGrafo] = useState<Estado<GraphResponse> | null>(null);
   const [particao, setParticao] = useState<PartitionResponse | null>(null);
+  const [leitura, setLeitura] = useState<InsightResponse | null>(null);
+  const [desfechos, setDesfechos] = useState<OutcomesResponse | null>(null);
+  const [mostrarDesfecho, setMostrarDesfecho] = useState(false);
+  const [foco, setFoco] = useState<number | null>(null);
+  const [papel, setPapel] = useState<RoleId | null>(null);
+  const [sinal, setSinal] = useState<SinalFiltro | null>(null);
+  const [bolhas, setBolhas] = useState(true);
 
   useEffect(() => {
     api
@@ -92,13 +188,10 @@ export default function App() {
       .datasets()
       .then(({ datasets: lista }) => {
         setDatasets({ status: "pronto", dados: lista });
-        const primeiro =
-          lista.find((d) => d.projections.length > 0 && d.partitions.length > 0) ??
-          lista.find((d) => d.projections.length > 0) ??
-          lista[0];
-        if (primeiro) {
-          setDatasetAtivo(primeiro.dataset);
-          setProjecaoAtiva(primeiro.projections[0] ?? null);
+        const inicial = escolhaInicial(lista);
+        if (inicial) {
+          setDatasetAtivo(inicial.dataset);
+          setProjecaoAtiva(inicial.projecao);
         }
       })
       .catch((erro: ApiError) => setDatasets({ status: "erro", erro }));
@@ -125,6 +218,18 @@ export default function App() {
     }
     setTema(novo);
   };
+
+  // F alterna o modo apresentação, de qualquer lugar fora de campos de texto.
+  useEffect(() => {
+    const aoTeclar = (e: globalThis.KeyboardEvent) => {
+      const alvo = e.target as HTMLElement | null;
+      if (e.ctrlKey || e.metaKey || e.altKey || e.key.toLowerCase() !== "f") return;
+      if (alvo && /^(INPUT|SELECT|TEXTAREA)$/.test(alvo.tagName)) return;
+      alternarApresentacao();
+    };
+    window.addEventListener("keydown", aoTeclar);
+    return () => window.removeEventListener("keydown", aoTeclar);
+  }, [alternarApresentacao]);
 
   /** Atalhos de zoom: valem só com o foco dentro do palco (grafo, controles ou painel do nó). */
   const atalhosDoPalco = (event: KeyboardEvent<HTMLElement>) => {
@@ -199,10 +304,46 @@ export default function App() {
     };
   }, [datasetAtivo, particaoAtiva]);
 
+  // A leitura (nomes, papéis, frases) e o desfecho vêm à parte e **depois** do
+  // grafo: pedir tudo junto fazia o servidor ler a mesma projeção duas vezes
+  // ao mesmo tempo (no AVA do OULAD, o grafo demorava o dobro).
+  const grafoPronto = grafo?.status === "pronto";
+  useEffect(() => {
+    setLeitura(null);
+    setDesfechos(null);
+    setMostrarDesfecho(false);
+    setFoco(null);
+    setPapel(null);
+    setSinal(null);
+    if (!datasetAtivo || !particaoAtiva || !grafoPronto) return;
+    let cancelado = false;
+    // Em fila, não em paralelo: o desfecho reaproveita a leitura que o servidor
+    // acabou de fazer (os sinais por aluno), e pedir os dois juntos a repetiria.
+    api
+      .insight(datasetAtivo, particaoAtiva)
+      .then((dados) => !cancelado && setLeitura(dados))
+      .catch(() => undefined)
+      .then(() => (cancelado ? null : api.outcomes(datasetAtivo, particaoAtiva)))
+      .then((dados) => dados && !cancelado && setDesfechos(dados.rows.length > 0 ? dados : null))
+      .catch(() => undefined);
+    return () => {
+      cancelado = true;
+    };
+  }, [datasetAtivo, particaoAtiva, grafoPronto]);
+
   const dadosGrafo = grafo?.status === "pronto" ? grafo.dados : null;
   const metricasDisponiveis = METRICAS.filter((m) => dadosGrafo?.centrality?.[m.id]);
+  const realce = useMemo(() => idsDoSinal(leitura?.signals, sinal), [leitura, sinal]);
+  const rotulosDosNos = useMemo(
+    () => new Map((dadosGrafo?.nodes ?? []).map((n) => [n.id, n.label])),
+    [dadosGrafo],
+  );
   const membership = particao?.membership ?? null;
   const chaveMetricas = metricasDisponiveis.map((m) => m.id).join(",");
+  const nomesDasComunidades = useMemo(
+    () => Object.fromEntries((leitura?.communities ?? []).map((c) => [c.id, c.name])),
+    [leitura],
+  );
 
   // Se a métrica escolhida não existe nesta projeção, cai na primeira que existir.
   useEffect(() => {
@@ -213,20 +354,50 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-    <div className="app">
+    <div className={`app ${apresentando ? "apresentando" : ""}`}>
       <header className="topo">
         <div className="hero">
           <p className="sobrelinha">Trabalho de Conclusão de Curso · Grupo 16 · UniAnchieta</p>
           <h1>Análise Topológica e Detecção de Comunidades em Redes Complexas</h1>
           <p className="autores" title={AUTORES.join(", ")}>{AUTORES.join(", ")}</p>
+          <nav className="abas" aria-label="Seções" data-tour="abas">
+            {ABAS.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                className={aba === a.id ? "ativa" : ""}
+                aria-current={aba === a.id ? "page" : undefined}
+                title={a.ajuda}
+                onClick={() => trocarAba(a.id)}
+              >
+                {a.nome}
+              </button>
+            ))}
+          </nav>
         </div>
         <div className="topo-lado">
           <span className="wordmark"><Marca /> edugraph</span>
-          <div className="topo-status"><StatusApi estado={health} /><BotaoTema tema={tema} onAlternar={alternarTema} /></div>
+          <div className="topo-status">
+            <StatusApi estado={health} />
+            <button type="button" className="tema-botao botao-tour" onClick={() => setTour(aba === "laboratorio" ? "lab" : "explorador")}
+              title="Rever o tour desta tela" aria-label="Rever o tour desta tela">
+              <b aria-hidden="true">?</b><span>Tour</span>
+            </button>
+            <button type="button" className="tema-botao botao-apresentar" aria-pressed={apresentando} onClick={alternarApresentacao}
+              title="Tela cheia, com letra maior (F)">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+              Apresentar
+            </button>
+            <BotaoTema tema={tema} onAlternar={alternarTema} />
+          </div>
         </div>
       </header>
+      {aba === "laboratorio" ? (
+        <LabView tema={tema} abrirTour={setTour} />
+      ) : (
+      <>
       <main className="palco" onKeyDown={atalhosDoPalco}>
-        <section className="figura-area" aria-label="Figura da rede">
+        <section className="figura-area" aria-label="Figura da rede" data-tour="x-grafo">
           {dadosGrafo && <StatsBar graph={dadosGrafo} partition={particao} />}
           <div className="figura">
             <AnimatePresence mode="wait">
@@ -241,7 +412,9 @@ export default function App() {
                 {dadosGrafo && (
                   <ErrorBoundary resetKey={`${datasetAtivo}/${projecaoAtiva}`}>
                     <GraphView ref={grafoRef} graph={dadosGrafo} membership={membership}
-                      sizeBy={metricaAtiva} tema={tema} selected={selecionado} onSelect={setSelecionado} />
+                      sizeBy={metricaAtiva} tema={tema} selected={selecionado} onSelect={setSelecionado}
+                      foco={foco} papel={papel} papeis={leitura?.roles ?? null} realce={realce}
+                      nomes={nomesDasComunidades} bolhas={bolhas} />
                   </ErrorBoundary>
                 )}
               </motion.div>
@@ -261,12 +434,12 @@ export default function App() {
         <aside className="nota-lateral" aria-label="Detalhes do nó">
           {!(dadosGrafo && selecionado) && <p className="inspetor-vazio">Selecione um nó no grafo para ver comunidade, centralidades e vizinhos.</p>}
           <AnimatePresence>
-            {dadosGrafo && selecionado && <NodePanel graph={dadosGrafo} membership={membership} nodeId={selecionado} onSelect={setSelecionado} />}
+            {dadosGrafo && selecionado && <NodePanel graph={dadosGrafo} membership={membership} nodeId={selecionado} onSelect={setSelecionado} leitura={leitura} />}
           </AnimatePresence>
         </aside>
       </main>
       <aside className="painel" aria-label="Controles do grafo">
-        <section className="cartao">
+        <section className="cartao" data-tour="x-dados">
           <Passo n={1} titulo="Dados" ajuda="Conjunto lido do disco." />
           {datasets.status === "carregando" && (
             <p className="nota nota-carregando">
@@ -299,7 +472,7 @@ export default function App() {
 
         {resumoAtivo && (
           <>
-            <section className="cartao">
+            <section className="cartao" data-tour="x-projecao">
               <Passo
                 n={2}
                 titulo="Projeção"
@@ -324,7 +497,7 @@ export default function App() {
               )}
             </section>
 
-            <section className="cartao">
+            <section className="cartao" data-tour="x-comunidades">
               <Passo
                 n={3}
                 titulo="Comunidades"
@@ -356,14 +529,77 @@ export default function App() {
                     <span>modularidade</span>
                     {particao.status !== "ok" && <span>{particao.status}</span>}
                   </div>
-                  <CommunityLegend membership={membership} />
+                  <CommunityLegend membership={membership} info={leitura?.communities}
+                    foco={foco} onFoco={setFoco}
+                    desfecho={mostrarDesfecho ? desfechos : null} sinais={leitura?.signals?.by_community} />
+                  {mostrarDesfecho && desfechos && <LegendaDeDesfecho rotulos={desfechos.labels} />}
                 </>
               )}
             </section>
 
+            {membership && (
+              <section className="cartao" data-tour="x-leitura">
+                <Passo n={4} titulo="Leitura" ajuda="O que este grafo diz." />
+                {leitura ? (
+                  <>
+                    <ul className="lab-resumo campo">
+                      {leitura.summary.map((frase) => <li key={frase}>{frase}</li>)}
+                    </ul>
+                    <ul className="papeis campo">
+                      {PAPEIS.map((p) => (
+                        <li key={p}>
+                          <button type="button" className={`papel-filtro papel-${p}`} aria-pressed={papel === p}
+                            disabled={leitura.role_counts[p] === 0} title={leitura.role_help[p]}
+                            onClick={() => {
+                              setPapel(papel === p ? null : p);
+                              setSinal(null);
+                            }}>
+                            <span className="papel-selo">{leitura.role_labels[p]}</span>
+                            <span className="papel-n">{leitura.role_counts[p]}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    {papel && <p className="opcoes-desc">{leitura.role_help[papel]}</p>}
+                    <PainelSinais
+                      leitura={leitura}
+                      rotulo={(id) => rotulosDosNos.get(id) ?? id}
+                      grupoDe={(id) => nomesDasComunidades[membership?.[id] ?? -1]}
+                      filtro={sinal}
+                      onFiltro={(f) => {
+                        setSinal(f);
+                        if (f) setPapel(null);
+                      }}
+                      onSelecionar={setSelecionado}
+                      validacao={mostrarDesfecho ? (desfechos?.signals ?? null) : null}
+                    />
+                  </>
+                ) : (
+                  <p className="nota nota-carregando">lendo o resultado…</p>
+                )}
+                {dadosGrafo && dadosGrafo.nodes.length <= 300 && (
+                  <label className="opcao campo">
+                    <input type="checkbox" checked={bolhas} onChange={(e) => setBolhas(e.target.checked)} />
+                    Contornos das comunidades
+                  </label>
+                )}
+                {desfechos && (
+                  <>
+                    <label className="opcao campo">
+                      <input type="checkbox" checked={mostrarDesfecho} onChange={(e) => setMostrarDesfecho(e.target.checked)} />
+                      Revelar o desfecho (aprovado, reprovado…)
+                    </label>
+                    {mostrarDesfecho && (
+                      <p className="opcoes-desc">O grafo não usou notas nem desfecho; eles só foram cruzados com os grupos agora.</p>
+                    )}
+                  </>
+                )}
+              </section>
+            )}
+
             <section className="cartao">
               <Passo
-                n={4}
+                n={5}
                 titulo="Centralidade"
                 ajuda="Define o tamanho dos nós."
               />
@@ -396,13 +632,15 @@ export default function App() {
         )}
 
       </aside>
-
+      </>
+      )}
 
       <footer className="rodape">
         <span>Repositório do TCC: <a href={URL_REPOSITORIO} target="_blank" rel="noopener noreferrer"
           aria-label="Repositório do TCC no GitHub (abre em nova aba)">luctmc/TCC.bipartite-network-analysis</a></span>
         <span>TCC · Grupo 16 · UniAnchieta</span>
       </footer>
+      {tour && <Tour key={tour} passos={PASSOS[tour]} onFechar={() => fecharTour(tour)} />}
     </div>
     </MotionConfig>
   );
@@ -470,36 +708,6 @@ const DESCRICAO_METRICA: Record<string, string> = {
   betweenness: "Intermediação: quanto o nó faz ponte entre grupos.",
   eigenvector: "Autovetor: quanto os vizinhos do nó também são centrais.",
 };
-
-/** Barra flutuante de zoom: aproximar, afastar e centralizar o grafo. */
-function ControlesZoom(props: {
-  aoAproximar: () => void;
-  aoAfastar: () => void;
-  aoCentralizar: () => void;
-}) {
-  const traco = (filhos: React.ReactNode) => (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {filhos}
-    </svg>
-  );
-  return (
-    <div className="zoom-controles" role="group" aria-label="Zoom do grafo">
-      <button type="button" onClick={props.aoAproximar} aria-label="Aproximar o grafo" title="Aproximar (+)">
-        {traco(<path d="M12 5v14M5 12h14" />)}
-      </button>
-      <button type="button" onClick={props.aoAfastar} aria-label="Afastar o grafo" title="Afastar (−)">
-        {traco(<path d="M5 12h14" />)}
-      </button>
-      <button type="button" onClick={props.aoCentralizar} aria-label="Centralizar o grafo" title="Centralizar (0)">
-        {traco(
-          <>
-            <path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4" />
-          </>,
-        )}
-      </button>
-    </div>
-  );
-}
 
 function BotaoTema({ tema, onAlternar }: { tema: Tema; onAlternar: () => void }) {
   const claro = tema === "light";
