@@ -20,6 +20,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from edugraph import __version__
+from edugraph.api.lab_routes import router as lab_router
 from edugraph.api.routes import router
 from edugraph.contracts.errors import ArtifactNotFoundError, ContractError
 from edugraph.contracts.paths import ArtifactRoots, as_roots
@@ -53,9 +54,10 @@ def create_app(
         title="edugraph — análise topológica de redes educacionais",
         version=__version__,
         description=(
-            "API somente leitura sobre artefatos pré-computados (ADR-0004). "
-            "O cálculo acontece pela CLI; esta API serve o que está em disco. "
-            "Uso interno da instituição."
+            "API sobre artefatos pré-computados (ADR-0004), com um laboratório que "
+            "monta redes pequenas na hora (ADR-0013). O cálculo pesado continua "
+            "na CLI; esta API serve o que está em disco e roda só o que cabe em "
+            "segundos. Uso interno da instituição."
         ),
     )
     app.state.roots = as_roots(roots)
@@ -64,11 +66,12 @@ def create_app(
         app.add_middleware(
             CORSMiddleware,
             allow_origins=list(DEV_ORIGINS),
-            allow_methods=["GET"],
+            allow_methods=["GET", "POST"],
             allow_headers=["*"],
         )
 
     app.include_router(router)
+    app.include_router(lab_router)
     _install_exception_handlers(app)
     _mount_frontend(app)
     return app

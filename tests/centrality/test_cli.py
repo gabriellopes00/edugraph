@@ -228,7 +228,10 @@ def test_comando_openapi_imprime_json_com_rotas_de_leitura(
     assert main(["api", "openapi", "--root", str(copia_fixtures)]) == 0
     schema = json.loads(capsys.readouterr().out)
     assert "/datasets/{dataset}/centrality/{projection_id}/{metric}" in schema["paths"]
-    assert all(set(methods) == {"get"} for methods in schema["paths"].values())
+    metodos = {caminho: set(m) for caminho, m in schema["paths"].items()}
+    # A única rota que não lê: o laboratório monta redes pequenas na hora (ADR-0013).
+    assert metodos.pop("/lab/run") == {"post"}
+    assert all(m == {"get"} for m in metodos.values()), "fora do laboratório, a API só lê"
 
 
 @pytest.mark.parametrize("reload", [False, True])

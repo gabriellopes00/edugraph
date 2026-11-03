@@ -20,6 +20,7 @@ import numpy as np
 from fastapi import APIRouter, HTTPException, Query, Request
 
 from edugraph import __version__
+from edugraph.api.projection_cache import load_projection_cached, remember
 from edugraph.api.schemas import (
     CentralityResponse,
     DatasetListResponse,
@@ -274,8 +275,12 @@ def get_projection(
     """
     roots = _roots(request)
     names = _split_metrics(metrics)
-    projection = io.load_projection(roots, dataset, projection_id)
-    nodes, edges, truncation = _graph_payload(projection.graph, max_edges, cut)
+    projection = load_projection_cached(roots, dataset, projection_id)
+    nodes, edges, truncation = remember(
+        projection,
+        ("payload", max_edges, cut),
+        lambda: _graph_payload(projection.graph, max_edges, cut),
+    )
 
     community = None
     if partition:

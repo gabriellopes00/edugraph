@@ -1,6 +1,6 @@
 # ADR-0004: API somente leitura sobre artefatos pré-computados
 
-**Status:** aceita
+**Status:** aceita; substituída em parte pela [ADR-0013](ADR-0013-laboratorio-ao-vivo.md) (o laboratório monta redes pequenas na hora; o cálculo pesado segue só pela CLI)
 **Data:** 2026-09-17
 **Decidido por:** Pedro, Gabriel, Lucas
 **Frente:** [C]

@@ -34,6 +34,8 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 from edugraph.community.compare import normalized_mutual_information as _nmi_of_dicts
 from edugraph.contracts import io
 from edugraph.contracts.errors import ContractError
@@ -370,6 +372,88 @@ def outcome_profile(partition: Partition, outcomes: Outcomes) -> list[dict[str, 
             row["top_excess"] = 0.0
         rows.append(row)
     return rows
+
+
+def outcomes_by_group(groups: dict[str, str], outcomes: Outcomes) -> dict[str, Any]:
+    """Distribuição de desfechos por **grupo qualquer** de nós, não só comunidade.
+
+    Serve à validação a posteriori dos sinais do laboratório (risco de
+    evasão, talentos): os grupos vêm de uma regra sobre o grafo, e aqui
+    se confere o que aconteceu de fato com quem caiu em cada um. As taxas
+    são sobre ``n_labeled``, como em :func:`outcome_profile`.
+
+    Parameters
+    ----------
+    groups
+        nó → nome do grupo. Nós sem desfecho conhecido contam em ``n``,
+        mas não nas taxas.
+    outcomes
+        Desfechos carregados por :func:`load_labels`.
+
+    Returns
+    -------
+    dict
+        ``{"base": {...}, "groups": {nome: {...}}}``; cada bloco tem
+        ``n``, ``n_labeled``, ``counts`` e ``rates`` por desfecho de
+        :data:`FINAL_RESULTS`. ``base`` é a população inteira de ``groups``.
+    """
+
+    def block(nodes: list[str]) -> dict[str, Any]:
+        counts: dict[str, int] = dict.fromkeys(FINAL_RESULTS, 0)
+        labeled = 0
+        for node in nodes:
+            result = outcomes.final_result.get(node)
+            if result in counts:
+                counts[result] += 1
+                labeled += 1
+        return {
+            "n": len(nodes),
+            "n_labeled": labeled,
+            "counts": counts,
+            "rates": {r: (counts[r] / labeled if labeled else 0.0) for r in FINAL_RESULTS},
+        }
+
+    members: dict[str, list[str]] = {}
+    for node, group in groups.items():
+        members.setdefault(group, []).append(node)
+    return {
+        "base": block(list(groups)),
+        "groups": {name: block(nodes) for name, nodes in members.items()},
+    }
+
+
+def rank_auc(
+    scores: dict[str, float],
+    outcomes: Outcomes,
+    positive: tuple[str, ...] = ("Fail", "Withdrawn"),
+) -> float | None:
+    """AUC de uma nota contra um desfecho: a chance de um positivo ter nota maior.
+
+    É a estatística de Mann-Whitney, por postos com empate pela média.
+    0,5 é o acaso; 1 é separação perfeita. Devolve ``None`` se faltar um
+    dos dois lados (ninguém ou todos são positivos).
+    """
+    nodes = [n for n in scores if n in outcomes.final_result]
+    if not nodes:
+        return None
+    values = np.array([scores[n] for n in nodes], dtype=float)
+    is_positive = np.array([outcomes.final_result[n] in positive for n in nodes])
+    n_pos = int(is_positive.sum())
+    n_neg = len(nodes) - n_pos
+    if n_pos == 0 or n_neg == 0:
+        return None
+    order = np.argsort(values, kind="mergesort")
+    ranks = np.empty(len(values))
+    sorted_values = values[order]
+    i = 0
+    while i < len(values):
+        j = i
+        while j + 1 < len(values) and sorted_values[j + 1] == sorted_values[i]:
+            j += 1
+        ranks[order[i : j + 1]] = (i + j) / 2 + 1
+        i = j + 1
+    rank_sum = float(ranks[is_positive].sum())
+    return (rank_sum - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg)
 
 
 def unknown_outcomes(partition: Partition, outcomes: Outcomes) -> int:
