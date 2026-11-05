@@ -1,4 +1,4 @@
-# Specs da Frente A — Dados e Modelagem  `[A]` Pedro
+# Specs da Frente A — Dados e Modelagem  `[A]`
 
 ETL do OULAD, gerador sintético, grafo bipartido e as duas projeções.
 

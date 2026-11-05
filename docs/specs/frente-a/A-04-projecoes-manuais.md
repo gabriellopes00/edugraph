@@ -1,7 +1,6 @@
 # [A-04] Projeções implementadas à mão: simples e alocação de recursos
 
 **Frente:** A
-**Dono:** Pedro
 **Status:** concluída (18/09/2026)
 
 ## Objetivo

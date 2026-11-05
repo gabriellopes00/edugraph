@@ -1,7 +1,6 @@
 # [A-03] Grafo bipartido parametrizável por `BipartiteSpec`
 
 **Frente:** A
-**Dono:** Pedro
 **Status:** concluída (18/09/2026)
 
 ## Objetivo

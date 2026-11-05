@@ -13,7 +13,7 @@ pytest                                            # sobre as fixtures (padrão)
 pytest tests --artifacts-root data/processed      # sobre o que a Frente A gerou
 pytest tests --artifacts-root data/processed --artifacts-root data/fixtures
 pytest -m "not slow"                              # o que a CI roda
-pytest tests/community                            # só a sua frente
+pytest tests/community                            # só uma frente
 ```
 
 **O `tests` explícito importa quando se usa `--artifacts-root`**: o
@@ -32,7 +32,7 @@ quando a raiz em uso não o contém.
 
 ## As camadas
 
-| Camada | Onde | O que garante | Dono |
+| Camada | Onde | O que garante | Frente |
 |---|---|---|---|
 | Contrato | `tests/contract/` | validadores sobre todo artefato da raiz; round-trip; escrita canônica; nenhum rótulo em `nodes.csv`; nenhum import cruzado; nenhuma dependência de ML; implementações registradas satisfazem os protocolos | `[T]` |
 | Unitário A | `tests/data/` | pesos de `tiny_v1` batem com `expected/`; manual = NetworkX até 1e-9; ETL sobre `oulad_mini`; critério e granularidade mudam o grafo | `[A]` |

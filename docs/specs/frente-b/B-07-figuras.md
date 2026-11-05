@@ -1,7 +1,6 @@
 # [B-07] Figuras de comunidades
 
 **Frente:** B
-**Dono:** Gabriel
 **Status:** concluída (20/09/2026) sobre `synthetic_v1`; a figura final do artigo sai da rodada do OULAD
 
 ## Objetivo

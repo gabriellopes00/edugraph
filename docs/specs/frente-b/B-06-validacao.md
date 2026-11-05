@@ -1,7 +1,6 @@
 # [B-06] Validação a posteriori das comunidades
 
 **Frente:** B
-**Dono:** Gabriel
 **Status:** concluída (20/09/2026)
 
 ## Objetivo
@@ -50,7 +49,7 @@ categorias já conhecidas.
 > artefato). `edugraph.data.nullmodel.is_null(bundle)` distingue uma
 > réplica de um dataset real sem depender do nome. Sugestão de critério:
 > reportar o z-score de Q contra ≥ 5 réplicas, e tratar z < 3 como
-> "indistinguível do acaso". Gabriel decide o critério final — isto é
+> "indistinguível do acaso". A Frente B decide o critério final — isto é
 > apontamento, não alteração de escopo.
 
 ## Escopo

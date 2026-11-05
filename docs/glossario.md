@@ -635,8 +635,8 @@ impressa em preto e branco.
 | **orçamento** e **`status`** | o limite de tempo de um algoritmo lento. `status` diz como a execução terminou: `ok`, `timeout` ou `skipped` |
 | **ADR** | registro curto de uma decisão de arquitetura e do porquê dela (`docs/adr/`) |
 | **spec** | o documento de uma tarefa: objetivo, escopo, critérios de aceite. Tem id, tipo `A-04` ou `C-06` |
-| **frente** | a divisão do trabalho entre os três. A é dados (Pedro), B é comunidades (Gabriel), C é centralidade e aplicação (Lucas) |
-| **observação** | recado de uma frente para outra, em `observacoes/`. Ninguém corrige o código do outro: anota, e o dono resolve |
+| **frente** | a divisão do trabalho por assunto. A é dados e modelagem, B é comunidades, C é centralidade e aplicação |
+| **observação** | pendência registrada no arquivo da frente, em `observacoes/`: o que não deu para corrigir na hora fica anotado, e qualquer integrante resolve |
 | **fixture** | base pequena e fixa usada nos testes (`tiny_v1`, `synthetic_v1`, `synthetic_v2`). Nunca muda |
 | **dado sintético** | base gerada por nós, com grupos **plantados** de propósito. Serve para provar que o método acha estrutura quando ela existe. Nunca se mistura com o OULAD |
 | **seed** | número que faz o sorteio dar sempre o mesmo resultado. Todo algoritmo com aleatoriedade recebe uma, e ela fica gravada no artefato |

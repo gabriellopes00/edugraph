@@ -8,7 +8,7 @@
  * revelado — confere os sinais contra o que aconteceu de fato.
  */
 
-import type { ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 import type { BlocoDeDesfecho, Insight, PerfilId, Sinais, ValidacaoDosSinais } from "../types";
 
@@ -33,6 +33,9 @@ const FILTROS: { id: SinalFiltro; perfil: PerfilId }[] = [
   { id: "talento", perfil: "talento" },
 ];
 
+/** Quantos cartões a lista de um filtro mostra de cada vez; o resto vem por "Mostrar mais". */
+const POR_PAGINA = 40;
+
 const pct = (v: number) => `${Math.round(100 * v)}%`;
 const decimal = (n: number, casas = 2) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
@@ -56,12 +59,9 @@ interface Props {
   filtro: SinalFiltro | null;
   onFiltro: (f: SinalFiltro | null) => void;
   onSelecionar: (id: string) => void;
-  /** Conferência com o desfecho real; só vem quando o desfecho foi revelado. */
-  validacao?: ValidacaoDosSinais | null;
-  ficticio?: boolean;
 }
 
-export function PainelSinais({ leitura, rotulo, grupoDe, filtro, onFiltro, onSelecionar, validacao, ficticio }: Props) {
+export function PainelSinais({ leitura, rotulo, grupoDe, filtro, onFiltro, onSelecionar }: Props) {
   const sinais = leitura.signals;
   if (!sinais) return null;
   const { counts } = sinais;
@@ -69,7 +69,7 @@ export function PainelSinais({ leitura, rotulo, grupoDe, filtro, onFiltro, onSel
   return (
     <div className="sinais" data-tour="perfis">
       <h3>
-        Perfis dos alunos <span>clique para ver no grafo</span>
+        Perfis dos alunos <span>clique para filtrar</span>
       </h3>
       <BarraDePerfis sinais={sinais} />
       <ul className="papeis sinais-filtros">
@@ -99,7 +99,18 @@ export function PainelSinais({ leitura, rotulo, grupoDe, filtro, onFiltro, onSel
         ou se destaca. Usam só as matrículas e os grupos; nenhuma nota nem desfecho entrou na conta.
       </p>
 
-      {sinais.attention.length > 0 && (
+      {filtro && (
+        <ListaDoFiltro
+          key={filtro}
+          filtro={filtro}
+          sinais={sinais}
+          rotulo={rotulo}
+          grupoDe={grupoDe}
+          onSelecionar={onSelecionar}
+        />
+      )}
+
+      {!filtro && sinais.attention.length > 0 && (
         <>
           <h3>
             Quem merece atenção <span>{counts.alto + counts.atencao} no total</span>
@@ -111,13 +122,13 @@ export function PainelSinais({ leitura, rotulo, grupoDe, filtro, onFiltro, onSel
           </ul>
           {counts.alto + counts.atencao > sinais.attention.length && (
             <p className="lab-nota dim">
-              Mostrando os {sinais.attention.length} de maior risco; use o filtro para ver todos no grafo.
+              Mostrando os {sinais.attention.length} de maior risco; use o filtro para ver todos.
             </p>
           )}
         </>
       )}
 
-      {sinais.talents.length > 0 && (
+      {!filtro && sinais.talents.length > 0 && (
         <>
           <h3>
             Possíveis talentos <span>{counts.talentos} no total</span>
@@ -129,9 +140,52 @@ export function PainelSinais({ leitura, rotulo, grupoDe, filtro, onFiltro, onSel
           </ul>
         </>
       )}
-
-      {validacao && <Conferencia validacao={validacao} ficticio={ficticio} />}
     </div>
+  );
+}
+
+/**
+ * Todos os alunos de um filtro, e não só os primeiros do resumo: o backend manda
+ * `attention` e `talents` cortados, mas `students` traz cada aluno com o porquê.
+ * Mesma ordem do resumo: maior risco primeiro; talentos, do mais destacado.
+ */
+function ListaDoFiltro({
+  filtro,
+  sinais,
+  rotulo,
+  grupoDe,
+  onSelecionar,
+}: {
+  filtro: SinalFiltro;
+  sinais: Sinais;
+  rotulo: (id: string) => string;
+  grupoDe: (id: string) => string | undefined;
+  onSelecionar: (id: string) => void;
+}) {
+  const [visiveis, setVisiveis] = useState(POR_PAGINA);
+  const ids = useMemo(() => {
+    const nota = (id: string) => (filtro === "talento" ? -sinais.students[id].strength : -sinais.students[id].risk);
+    return [...(idsDoSinal(sinais, filtro) ?? [])].sort(
+      (a, b) => nota(a) - nota(b) || (rotulo(a) < rotulo(b) ? -1 : rotulo(a) > rotulo(b) ? 1 : a < b ? -1 : 1),
+    );
+  }, [sinais, filtro, rotulo]);
+  const perfil = FILTROS.find((f) => f.id === filtro)?.perfil ?? "risco";
+  return (
+    <>
+      <h3>
+        {sinais.profile_labels[perfil]} <span>{ids.length} no total</span>
+      </h3>
+      <ul className="alunos-lista">
+        {ids.slice(0, visiveis).map((id) => (
+          <CartaoDoAluno key={id} id={id} sinais={sinais} rotulo={rotulo} grupo={grupoDe(id)} onSelecionar={onSelecionar} />
+        ))}
+      </ul>
+      {ids.length > visiveis && (
+        <button type="button" className="botao-secundario" onClick={() => setVisiveis((v) => v + POR_PAGINA)}>
+          Mostrar mais ({ids.length - visiveis} restantes)
+        </button>
+      )}
+    </>
   );
 }
 
@@ -209,7 +263,11 @@ function positivos(b: BlocoDeDesfecho): number {
   return (b.rates.Pass ?? 0) + (b.rates.Distinction ?? 0);
 }
 
-function Conferencia({ validacao, ficticio }: { validacao: ValidacaoDosSinais; ficticio?: boolean }) {
+/**
+ * Os sinais conferidos contra o desfecho real. Fica junto da opção que revela o
+ * desfecho (quem a liga vê a tabela ali, sem rolar), e não entre os perfis.
+ */
+export function Conferencia({ validacao, ficticio }: { validacao: ValidacaoDosSinais; ficticio?: boolean }) {
   const { risk, talent } = validacao;
   const alto = risk.groups.alto;
   const atencao = risk.groups.atencao;

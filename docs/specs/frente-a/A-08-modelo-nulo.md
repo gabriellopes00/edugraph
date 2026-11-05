@@ -1,7 +1,6 @@
 # [A-08] Modelo nulo: a linha de base da modularidade
 
 **Frente:** A
-**Dono:** Pedro
 **Status:** concluída (18/09/2026)
 
 ## Objetivo

@@ -1,4 +1,4 @@
-# Specs da Frente B — Detecção de Comunidades  `[B]` Gabriel
+# Specs da Frente B — Detecção de Comunidades  `[B]`
 
 Louvain, Girvan-Newman, modularidade Q à mão, comparação e
 caracterização.

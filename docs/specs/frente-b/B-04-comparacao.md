@@ -1,7 +1,6 @@
 # [B-04] Comparação Louvain × Girvan-Newman × ponderação
 
 **Frente:** B
-**Dono:** Gabriel
 **Status:** concluída (20/09/2026)
 
 ## Objetivo

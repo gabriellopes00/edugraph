@@ -1,7 +1,6 @@
 # [A-09] Granularidades do comportamento: o bipartido pelo AVA
 
 **Frente:** A
-**Dono:** Pedro
 **Status:** concluída (18/09/2026)
 
 ## Objetivo

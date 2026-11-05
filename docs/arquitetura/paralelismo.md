@@ -82,11 +82,11 @@ continuam existindo para os testes que dependem delas.
 Isso elimina a classe inteira de conflitos "a fixture mudou e meu teste
 quebrou".
 
-## A segunda-feira de cada um
+## A segunda-feira de cada frente
 
 Nenhum destes comandos executa código de outra frente.
 
-### `[A]` Pedro
+### `[A]` Dados e Modelagem
 
 ```bash
 python -m edugraph data synthetic --seed 7 --out data/processed
@@ -99,7 +99,7 @@ pytest tests/data tests/contract
 Desenvolve o ETL do OULAD contra `tests/data/oulad_mini/`; roda a base
 completa só quando o download estiver feito.
 
-### `[B]` Gabriel
+### `[B]` Comunidades
 
 ```bash
 python -m edugraph community louvain \
@@ -113,7 +113,7 @@ pytest tests/community tests/contract
 Quando o OULAD chegar: `--root data/processed --dataset oulad_bbb_2013j`.
 **Nada mais muda.**
 
-### `[C]` Lucas
+### `[C]` Centralidade e Aplicação
 
 ```bash
 python -m edugraph centrality all --root data/fixtures --dataset synthetic_v1
@@ -150,7 +150,7 @@ CI, documentação, ADRs e as 21 specs.
 Depois, a onda N+1 de uma frente **nunca** depende da onda N de outra. As
 ondas são sugestão de ritmo, não obrigação.
 
-| Onda | `[A]` Pedro | `[B]` Gabriel | `[C]` Lucas |
+| Onda | `[A]` Dados e Modelagem | `[B]` Comunidades | `[C]` Centralidade e Aplicação |
 |---|---|---|---|
 | 1 | A-01 gerador · A-02 ETL OULAD | B-01 Louvain · B-03 Q à mão | C-01 grau e intermediação · C-04 API |
 | 2 | A-03 bipartido · A-04 projeções manuais | B-02 Girvan-Newman · B-04 comparação | C-02 autovetor · C-03 disciplinas críticas · C-05 front-end |

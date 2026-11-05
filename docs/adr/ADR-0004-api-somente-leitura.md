@@ -2,7 +2,7 @@
 
 **Status:** aceita; substituída em parte pela [ADR-0013](ADR-0013-laboratorio-ao-vivo.md) (o laboratório monta redes pequenas na hora; o cálculo pesado segue só pela CLI)
 **Data:** 2026-09-17
-**Decidido por:** Pedro, Gabriel, Lucas
+**Decidido por:** o grupo
 **Frente:** [C]
 
 ## Contexto
@@ -34,7 +34,7 @@ artefato já gravado.
 **Boas.** A API sobe em milissegundos e responde em milissegundos.
 Funciona no dia 0 sobre `data/fixtures` e **não sabe** se a partição veio
 da Frente B ou da biblioteca de referência — é essa ignorância que
-permite ao Lucas construir a aplicação inteira antes de B existir. Cada
+permite à Frente C construir a aplicação inteira antes de B existir. Cada
 resposta é reprodutível, porque vem de um artefato com `meta.json`.
 
 **Ruins.** Não dá para explorar interativamente uma configuração nova

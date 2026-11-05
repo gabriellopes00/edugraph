@@ -1,7 +1,6 @@
 # [C-06] Validação a posteriori da centralidade
 
 **Frente:** C
-**Dono:** Lucas
 **Status:** concluída (25/09/2026)
 
 ## Objetivo

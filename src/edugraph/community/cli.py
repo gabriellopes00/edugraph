@@ -1,6 +1,6 @@
 """CLI da Frente B  ``[B]`` — grupo de comandos ``edugraph community``.
 
-A segunda-feira do Gabriel (§5.2 do plano de arquitetura)::
+O ponto de partida da Frente B (§5.2 do plano de arquitetura)::
 
     python -m edugraph community louvain \\
         --root data/fixtures --dataset synthetic_v1 --projection student_simple

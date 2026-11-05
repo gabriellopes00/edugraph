@@ -1,4 +1,4 @@
-"""Frente B — Detecção de Comunidades  ``[B]`` Gabriel.
+"""Frente B — Detecção de Comunidades  ``[B]``.
 
 Louvain, Girvan-Newman, modularidade Q implementada à mão, comparação de
 qualidade e custo, e caracterização das comunidades encontradas.

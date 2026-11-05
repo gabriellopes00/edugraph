@@ -7,7 +7,7 @@ uma frente ou precisa de decisão conjunta.
 
 ### T-OBS-01 · `oulad_bbb_2013j` sem comunidades e sem centralidades
 
-- **De:** Lucas (Frente C) · **Data:** 26/09/2026
+- **De:** Frente C · **Data:** 26/09/2026
 - **Onde:** `data/processed/oulad_bbb_2013j` (fora do git)
 - **O quê:** o dataset da coorte por avaliação (1.706 alunos) foi gerado pela
   Frente A, mas nenhuma frente rodou comunidades nem centralidades nele. No
@@ -25,7 +25,7 @@ uma frente ou precisa de decisão conjunta.
   `stages = ["data", "community", "centrality"]`: a falta registrada é
   só de execução, não de configuração. A execução real não é verificável
   nesta máquina, sem dados brutos OULAD nem `data/processed`.
-- **Atualização:** 30/10/2026 por Pedro, revisão de entrega — rodei
+- **Atualização:** 30/10/2026 pela Frente A, revisão de entrega — rodei
   `run configs/oulad_cohort_bbb_2013j.toml` do zero. `data` levou ~15 s e o
   Louvain em `student_simple`, ~6 s; interrompi no Girvan-Newman. Medido à
   parte: na amostra de 400 alunos (`sample_nodes = 400`), a projeção tem
@@ -35,7 +35,7 @@ uma frente ou precisa de decisão conjunta.
   terminar em `skipped` ou `timeout` com poucos cortes. Antes de rodar, a
   Frente B deveria reduzir `sample_nodes` (100 a 150) ou o orçamento. A intermediação exata
   da Frente C nessa coorte é barata: ~2 min por projeção de aluno.
-- **Atualização:** 30/10/2026 por Pedro — `oulad_bbb_2013j` foi completado
+- **Atualização:** 30/10/2026 pela Frente A — `oulad_bbb_2013j` foi completado
   só com Louvain e centralidade (`community louvain` nas quatro projeções
   e `centrality all --k 200`, 85 s no total; `validate` ok, 22 artefatos).
   Falta o Girvan–Newman da coorte, que continua levando > 2 h com a
@@ -70,7 +70,7 @@ uma frente ou precisa de decisão conjunta.
 
 ### T-OBS-04 · Decisões de entrega que precisam dos três
 
-- **De:** Pedro (Frente A), revisão de entrega · **Data:** 30/10/2026
+- **De:** Frente A, revisão de entrega · **Data:** 30/10/2026
 - **Onde:** [`docs/entrega.md`](../docs/entrega.md)
 - **O quê:** a revisão de entrega (clone limpo, instalação, testes,
   pipeline sintético, API e rodada do OULAD) deixou três decisões que
@@ -80,13 +80,13 @@ uma frente ou precisa de decisão conjunta.
   (3) T-OBS-02 (mistura de rodadas no runner) antes da entrega ou como
   limitação documentada. Os números e os comandos estão no documento.
 - **Como resolver:** decidir em conjunto e registrar a decisão aqui.
-- **Atualização:** 30/10/2026 por Pedro — o laboratório ao vivo e o cache
+- **Atualização:** 30/10/2026 pela Frente A — o laboratório ao vivo e o cache
   da API foram implementados (ver a seção 8 de
   [`docs/entrega.md`](../docs/entrega.md) e a ADR-0013). A decisão (2) sobre
   o front compilado ficou mais importante: **sem Node a banca não vê o
   laboratório**, só um JSON em `/`. Também: o `CLAUDE.md` deixou de exigir
   contrato congelado e ownership por frente, a pedido do grupo.
-- **Atualização:** 31/10/2026 por Pedro — o grupo decidiu que as figuras saem do
+- **Atualização:** 31/10/2026 pela Frente A — o grupo decidiu que as figuras saem do
   repositório (ver `docs/entrega.md`, seção 6): `results/figures/` foi apagada
   da árvore e ignorada. Isso resolve o peso **na árvore** (15 MB) e a ZIP do
   GitHub, mas o **histórico** continua com as versões antigas (14,5 MB de PNG e
@@ -95,12 +95,31 @@ uma frente ou precisa de decisão conjunta.
   O sistema também foi verificado sem `data/processed/`: com ou sem ela, a
   API sobe, o laboratório monta a turma de Computação e o explorador lista
   as fixtures (`tests/api/test_raiz_ausente.py`).
+- **Atualização:** 04/11/2026 pela Frente A — `scripts/iniciar.py` sobe o projeto
+  com um comando e **compila o front quando há Node**, o que atenua a decisão
+  (2) mas não a resolve: sem Node, `/` continua mostrando o JSON. Medido num
+  clone limpo: 2 min 05 s do clone ao navegador. Ver `docs/entrega.md`,
+  seção 9.
+
+### T-OBS-05 · Respostas do orientador na apresentação de novembro
+
+- **De:** Frente A · **Data:** 04/11/2026
+- **Onde:** `docs/orientador/estudo-apresentacao-11-2026.md`, seção 6
+- **O quê:** levamos três perguntas: (1) entregar o OULAD ou só os
+  fictícios — proposta: fictícios + ZIP de 31,5 MB com os resultados,
+  instalado por `python scripts/iniciar.py --oulad <zip>`; (2) se uma versão
+  online só com os fictícios ajuda (análise da Vercel e da alternativa em
+  contêiner em `docs/entrega.md`, seção 9); (3) se o "risco de evasão" cabe
+  na regra "sem ML" ou deve ser renomeado.
+- **Como resolver:** anotar aqui a resposta de cada uma. A (1) define se a
+  release com o ZIP entra na entrega (e depende de A-OBS-11); a (2), se
+  alguém prepara a hospedagem; a (3) pode virar ADR (muda a ADR-0013).
 
 ## Resolvidas
 
 ### T-OBS-03 · Informativo: CI do frontend executa lint e testes
 
-- **De:** correção FIX-C2, sessão do Lucas · **Data:** 20/10/2026
+- **De:** correção FIX-C2, Frente C · **Data:** 20/10/2026
 - **Onde:** `.github/workflows/ci.yml:96` e `frontend/package.json:14`.
 - **O quê:** o job do frontend usa o lockfile como chave de cache e
   instala por `npm ci`; além de tipos e build, passa a executar
@@ -109,5 +128,5 @@ uma frente ou precisa de decisão conjunta.
   seis testes do cliente. O caráter informativo do job foi preservado.
 - **Como resolver:** aviso ao grupo; manter o lockfile e os testes do
   frontend atualizados nas próximas alterações.
-- **Resolvida:** 20/10/2026 por Lucas, branch c/pendencias-frente-c —
+- **Resolvida:** 20/10/2026 pela Frente C, branch c/pendencias-frente-c —
   CI atualizada e comandos verificados localmente; item informativo.

@@ -37,6 +37,7 @@ e aqui fica só o que se envia.
 | # | Tipo | Assunto | Data | Estado |
 |---|---|---|---|---|
 | [01](nota-01-criterio-de-aresta.md) | nota | Troca do critério de aresta de matrícula para interação no AVA | 18/09/2026 | a enviar |
+| [estudo](estudo-apresentacao-11-2026.md) | estudo | Visão geral do sistema para a apresentação de feedback, com foco no laboratório; três perguntas (OULAD na entrega, versão online, "risco de evasão") | 04/11/2026 | respostas em T-OBS-05 |
 
 ## Depois da resposta
 

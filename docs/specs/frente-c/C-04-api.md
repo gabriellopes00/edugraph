@@ -1,7 +1,6 @@
 # [C-04] API FastAPI somente leitura
 
 **Frente:** C
-**Dono:** Lucas
 **Status:** concluída (25/09/2026)
 
 ## Objetivo

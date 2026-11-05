@@ -15,12 +15,12 @@ Decisão registrada na [ADR-0009](../adr/ADR-0009-trunk-based-prs-por-spec.md).
 
 ## Quem revisa o quê
 
-**PR que toca só a sua área** — `src/<frente>/`, `tests/<frente>/`,
-`docs/specs/frente-X/`: o dono mescla com CI verde. Revisão opcional.
+**PR que toca só uma frente** — `src/<frente>/`, `tests/<frente>/`,
+`docs/specs/frente-X/`: mescla com CI verde. Revisão opcional.
 
 **PR que toca área compartilhada** — `contracts/`, `tests/contract/`,
 `data/fixtures/`, `__main__.py`, `pyproject.toml`, `requirements*.txt`:
-**aprovação dos outros dois**. Se muda contrato, ADR no mesmo PR.
+**aprovação no PR**. Se muda contrato, ADR no mesmo PR.
 
 A assimetria é proposital: 90% dos PRs caem no primeiro caso e não
 esperam ninguém; os 10% que podem quebrar as outras frentes são
@@ -63,10 +63,10 @@ As specs foram dimensionadas para uma sessão de trabalho justamente por
 isso (briefing §12); se uma passou do tamanho, ela estava mal
 dimensionada.
 
-**Preciso de algo que está na frente do outro.** Não importe. Ou o que
+**Preciso de algo que está em outra frente.** Não importe. Ou o que
 você precisa é contrato (e vai para `contracts/`), ou é utilidade
-genérica (e vai para `reporting/`), ou você está fazendo o trabalho da
-outra pessoa. O teste de fronteira vai recusar de qualquer forma.
+genérica (e vai para `reporting/`), ou o código pertence a outra
+frente. O teste de fronteira vai recusar de qualquer forma.
 
 **A CI quebrou num teste `xfail`.** Um `xfail(strict=True)` que **passa**
 quebra a CI de propósito: é o aviso de que a spec fechou e o marcador

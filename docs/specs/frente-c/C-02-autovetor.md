@@ -1,7 +1,6 @@
 # [C-02] Centralidade de autovetor por iteração de potência
 
 **Frente:** C
-**Dono:** Lucas
 **Status:** concluída (25/09/2026)
 
 ## Objetivo

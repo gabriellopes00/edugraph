@@ -1,7 +1,6 @@
 # [A-02] ETL do OULAD: download, esquema e tabela normalizada
 
 **Frente:** A
-**Dono:** Pedro
 **Status:** concluída (18/09/2026), incluindo a rodada na base completa
 
 ## Objetivo

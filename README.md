@@ -19,6 +19,19 @@ aprendizado de máquina**.
 
 ## Comece aqui
 
+**Um comando só:** depois do clone, `python scripts/iniciar.py` cria a
+`.venv`, instala, valida as fixtures, roda os testes da CI, compila a
+interface (se houver Node) e abre http://127.0.0.1:8000/ no navegador.
+Num clone limpo leva ~2 min; nas vezes seguintes, segundos.
+
+```bash
+git clone https://github.com/luctmc/TCC.bipartite-network-analysis C:\tcc
+cd C:\tcc
+python scripts/iniciar.py                 # --sem-testes pula o pytest; --porta 8001 troca a porta
+```
+
+Passo a passo, se preferir:
+
 ```bash
 git clone https://github.com/luctmc/TCC.bipartite-network-analysis
 cd TCC.bipartite-network-analysis
@@ -75,6 +88,19 @@ e o explorador, com `synthetic_v1`, `synthetic_v2` e `tiny_v1`. Se existir
 `data/processed/` (por exemplo, o ZIP de resultados do OULAD descompactado
 na raiz do repositório), ele entra sozinho na lista, sem flag nenhuma.
 Coberto por `tests/api/test_raiz_ausente.py`.
+
+**Recebeu o ZIP com os resultados do OULAD?** Não precisa baixar nem
+recalcular nada:
+
+```bash
+python scripts/iniciar.py --oulad caminho\para\oulad-resultados.zip
+```
+
+O script acha os datasets dentro do ZIP em qualquer nível de pasta, copia
+para `data/processed/`, valida e abre a interface. À mão: extraia de modo
+que exista `data/processed/oulad_vle_bbb_2013j/bipartite/nodes.csv` e suba
+a API **a partir da raiz do repositório** (as raízes são relativas à pasta
+atual). Detalhes em [`docs/entrega.md`](docs/entrega.md), seção 9.
 
 ## O que dá para fazer agora
 
@@ -156,8 +182,7 @@ funcionam do mesmo jeito. Detalhes e roteiro de apresentação em
 
 ## Como o projeto está organizado
 
-Três pessoas, três frentes, trabalhando **ao mesmo tempo**. O que torna
-isso possível:
+Três frentes, trabalhando **ao mesmo tempo**. O que torna isso possível:
 
 1. **A fronteira entre frentes é o disco.** Nenhuma frente importa outra;
    elas se comunicam por artefatos num layout fixo. Um teste falha se
@@ -168,11 +193,11 @@ isso possível:
 3. **Trocar de fonte é trocar `--root`.** Quando o OULAD estiver em
    `data/processed`, ninguém muda código.
 
-| Frente | Dono | Escopo |
-|---|---|---|
-| **A** — Dados e Modelagem | Pedro | ETL do OULAD, gerador sintético, bipartido, projeções |
-| **B** — Comunidades | Gabriel | Louvain, Girvan-Newman, modularidade, caracterização |
-| **C** — Centralidade e Aplicação | Lucas | grau, intermediação, autovetor, disciplinas críticas, API, front-end |
+| Frente | Escopo |
+|---|---|
+| **A** — Dados e Modelagem | ETL do OULAD, gerador sintético, bipartido, projeções |
+| **B** — Comunidades | Louvain, Girvan-Newman, modularidade, caracterização |
+| **C** — Centralidade e Aplicação | grau, intermediação, autovetor, disciplinas críticas, API, front-end |
 
 ```
 src/edugraph/
@@ -224,7 +249,7 @@ Comece por [`docs/README.md`](docs/README.md). Os atalhos:
 - [Visão geral da arquitetura](docs/arquitetura/visao-geral.md)
 - [Como as frentes não se bloqueiam](docs/arquitetura/paralelismo.md)
 - [As 23 specs](docs/specs/README.md)
-- [As 13 ADRs](docs/adr/README.md)
+- [As 14 ADRs](docs/adr/README.md)
 - [Os contratos de dados](docs/contratos/README.md)
 - [Estratégia de testes](docs/testes/estrategia.md)
 

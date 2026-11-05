@@ -11,8 +11,8 @@ histórico do chat ou na cabeça de quem implementou.
 |---|---|
 | entender um termo que apareceu (grafo, projeção, modularidade) | [glossario.md](glossario.md) |
 | entender a arquitetura em 10 minutos | [arquitetura/visao-geral.md](arquitetura/visao-geral.md) |
-| saber se alguém deixou um recado para você | [../observacoes/](../observacoes/README.md) → o seu arquivo e o `para-todos.md` |
-| começar a trabalhar na sua frente | [specs/README.md](specs/README.md) → o README da sua frente |
+| ver as pendências abertas | [../observacoes/](../observacoes/README.md) → o arquivo da frente e o `para-todos.md` |
+| começar a trabalhar numa frente | [specs/README.md](specs/README.md) → o README da frente |
 | saber por que algo foi decidido assim | [adr/README.md](adr/README.md) |
 | implementar contra um contrato | [contratos/README.md](contratos/README.md) |
 | entender por que ninguém espera por ninguém | [arquitetura/paralelismo.md](arquitetura/paralelismo.md) |
@@ -30,7 +30,7 @@ chegou agora, ou quem travou numa palavra lendo uma spec.
 
 ### [`adr/`](adr/README.md) — decisões de arquitetura
 
-Treze ADRs no formato MADR curto. Só decisões que divergem ou detalham as
+Catorze ADRs no formato MADR curto. Só decisões que divergem ou detalham as
 seções 2, 4 e 7 do briefing ganham ADR; divergir do starter kit não
 precisa.
 
@@ -46,7 +46,7 @@ pacote está **congelado**: mudança exige ADR e aprovação dos três.
 - [diagrama-cap3.md](arquitetura/diagrama-cap3.md) — a figura que abre o
   capítulo 3, em Mermaid
 - [paralelismo.md](arquitetura/paralelismo.md) — as dependências reais e
-  o que as neutraliza; a segunda-feira de cada um
+  o que as neutraliza; a segunda-feira de cada frente
 - [branches-e-merge.md](arquitetura/branches-e-merge.md) — o fluxo de
   trabalho
 
@@ -92,7 +92,7 @@ documentos acima.
 - **Mudou um contrato?** ADR + o documento em `contratos/` + fixtures.
 - **Fechou uma spec?** Marque `Status: concluída` no arquivo da spec, no
   mesmo PR.
-- **Tomou uma decisão não-óbvia?** Se outra pessoa do grupo puder ser
-  surpreendida por ela, vira ADR ou entra em
+- **Tomou uma decisão não-óbvia?** Se ela puder surpreender quem ler o
+  repositório depois, vira ADR ou entra em
   `artigo/decisoes-metodologicas.md`.
 - **Gerou figura ou tabela?** Confira que entrou nos índices.

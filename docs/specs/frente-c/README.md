@@ -1,4 +1,4 @@
-# Specs da Frente C — Centralidade e Aplicação  `[C]` Lucas
+# Specs da Frente C — Centralidade e Aplicação  `[C]`
 
 Grau, intermediação, autovetor, disciplinas críticas, API e front-end.
 

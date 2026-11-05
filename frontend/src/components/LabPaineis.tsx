@@ -14,7 +14,7 @@ import { pontoAtual, serieQ, type Estado } from "../lab/frames";
 import type { CentralityMetric, LabRun, RoleId } from "../types";
 import { CommunityLegend, LegendaDeDesfecho } from "./CommunityLegend";
 import { QChart } from "./QChart";
-import { PainelSinais, type SinalFiltro } from "./Sinais";
+import { Conferencia, PainelSinais, type SinalFiltro } from "./Sinais";
 
 export const NOME_ALGORITMO: Record<string, string> = {
   louvain: "Louvain",
@@ -255,8 +255,6 @@ export function PainelResultado(p: PainelResultadoProps) {
           filtro={p.sinal}
           onFiltro={p.onSinal}
           onSelecionar={p.onSelecionar}
-          validacao={p.desfecho ? (reveal.signals ?? null) : null}
-          ficticio={run.source.fictional}
         />
       )}
 
@@ -331,6 +329,7 @@ export function PainelResultado(p: PainelResultadoProps) {
               agora.{run.source.fictional ? " Aqui o desfecho é sintético: o gerador sorteia alguns alunos \"em risco\", com notas menores e mais abandono." : ""}
             </p>
           )}
+          {p.desfecho && reveal.signals && <Conferencia validacao={reveal.signals} ficticio={run.source.fictional} />}
         </div>
       )}
 

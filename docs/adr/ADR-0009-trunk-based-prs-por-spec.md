@@ -2,7 +2,7 @@
 
 **Status:** aceita
 **Data:** 2026-09-17
-**Decidido por:** Pedro, Gabriel, Lucas
+**Decidido por:** o grupo
 **Frente:** [T]
 
 ## Contexto
@@ -26,8 +26,8 @@ merge.
 
 **Revisão por área tocada:**
 
-- PR que toca só a própria pasta em `src/`, `tests/` e `docs/specs/`: o
-  dono mescla com CI verde; revisão opcional.
+- PR que toca só a própria pasta em `src/`, `tests/` e `docs/specs/`:
+  mescla com CI verde; revisão opcional.
 - PR que toca `contracts/`, `tests/contract/`, `data/fixtures/`,
   `__main__.py`, `pyproject.toml` ou `requirements*.txt`: **aprovação dos
   outros dois**; se muda contrato, ADR junto.

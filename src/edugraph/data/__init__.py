@@ -1,4 +1,4 @@
-"""Frente A — Dados e Modelagem  ``[A]`` Pedro.
+"""Frente A — Dados e Modelagem  ``[A]``.
 
 ETL do OULAD, gerador sintético, construção do grafo bipartido e as duas
 projeções ponderadas.

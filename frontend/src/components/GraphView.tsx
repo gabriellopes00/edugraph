@@ -23,6 +23,7 @@ import fcose from "cytoscape-fcose";
 import { communityOrder, communityStyle, themeColor } from "../palette";
 import type { CentralityMetric, GraphResponse, RoleId } from "../types";
 import { useCascas, type Casca } from "./cascas";
+import { useRedimensionar } from "./useRedimensionar";
 import { CLASSES_DA_SELECAO, destacarSelecao, enquadrarGrupo, estiloDaSelecao } from "./selecao";
 
 cytoscape.use(fcose);
@@ -375,6 +376,8 @@ export const GraphView = forwardRef<GraphViewHandle, GraphViewProps>(function Gr
     }),
     [],
   );
+
+  useRedimensionar(containerRef, cyRef, enquadrar);
 
   // 1. Um Cytoscape por grafo.
   useEffect(() => {
