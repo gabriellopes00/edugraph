@@ -1,7 +1,6 @@
 # [B-02] Girvan-Newman com orçamento de tempo
 
 **Frente:** B
-**Dono:** Gabriel
 **Status:** concluída (20/09/2026)
 
 ## Objetivo

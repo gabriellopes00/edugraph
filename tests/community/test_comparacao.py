@@ -215,7 +215,7 @@ def test_matriz_de_concordancia_so_cruza_a_mesma_projecao() -> None:
 def test_compare_pela_cli_grava_a_tabela_principal(
     tmp_path: Path, capsys: pytest.CaptureFixture
 ) -> None:
-    """O caminho que o Gabriel roda: louvain → compare → tabela."""
+    """O caminho que a Frente B roda: louvain → compare → tabela."""
     from edugraph.__main__ import main
 
     assert main(["community", "louvain", "--root", "data/fixtures", "--dataset", "synthetic_v1",

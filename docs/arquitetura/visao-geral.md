@@ -43,7 +43,7 @@ trabalhando ao mesmo tempo nele ficariam bloqueadas.
 
 ## Mapa do repositório
 
-| Caminho | Dono | O que é |
+| Caminho | Frente | O que é |
 |---|---|---|
 | `src/edugraph/contracts/` | `[T]` | tipos, protocolos, io, validadores — **congelado** |
 | `src/edugraph/data/` | `[A]` | ETL, gerador sintético, bipartido, projeções |
@@ -89,7 +89,7 @@ Duas regras, as duas testadas:
 - [Diagrama do capítulo 3](diagrama-cap3.md) — a figura que abre o
   capítulo de Resultados.
 - [Paralelismo](paralelismo.md) — as dependências reais e o que as
-  neutraliza; a segunda-feira de cada um.
+  neutraliza; a segunda-feira de cada frente.
 - [Branches e merge](branches-e-merge.md) — o fluxo de trabalho.
 - [ADRs](../adr/README.md) — por que cada decisão foi tomada.
 - [Contratos](../contratos/README.md) — o que atravessa a fronteira.

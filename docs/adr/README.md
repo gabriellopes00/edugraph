@@ -27,13 +27,14 @@ banca, a resposta está aqui.
 | [0011](ADR-0011-determinismo.md) | Determinismo: seeds, escrita canônica, versões pinadas | [T] |
 | [0012](ADR-0012-granularidades-do-comportamento.md) | Granularidades do comportamento: o bipartido pelo AVA | [A] |
 | [0013](ADR-0013-laboratorio-ao-vivo.md) | Laboratório ao vivo e leitura dos resultados em linguagem de gente (substitui em parte a 0004) | [T] |
+| [0014](ADR-0014-frentes-sem-dono.md) | Dividir o trabalho por frente, não por pessoa | [T] |
 
 ## As que sustentam o paralelismo
 
 Se alguém tiver tempo para ler só três, são estas: **0001** (a fronteira
 é o disco), **0003** (a fronteira é testada) e **0008** (o rótulo não
-entra no grafo). As duas primeiras são o que permite três pessoas
-trabalharem ao mesmo tempo; a terceira é o que protege o diferencial
+entra no grafo). As duas primeiras são o que permite três frentes
+avançarem ao mesmo tempo; a terceira é o que protege o diferencial
 declarado do trabalho.
 
 ## Decisões que ainda não viraram ADR

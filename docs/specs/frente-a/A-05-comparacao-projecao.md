@@ -1,7 +1,6 @@
 # [A-05] Projeção de referência via NetworkX e comparação
 
 **Frente:** A
-**Dono:** Pedro
 **Status:** concluída (18/09/2026)
 
 ## Objetivo

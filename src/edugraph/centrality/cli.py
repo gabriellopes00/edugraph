@@ -1,6 +1,6 @@
 """CLI da Frente C  ``[C]`` — grupo de comandos ``edugraph centrality``.
 
-A segunda-feira do Lucas (§5.2 do plano de arquitetura)::
+O ponto de partida da Frente C (§5.2 do plano de arquitetura)::
 
     python -m edugraph centrality all --root data/fixtures --dataset synthetic_v1
     python -m edugraph api serve --root data/processed --root data/fixtures

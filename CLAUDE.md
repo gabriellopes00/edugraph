@@ -5,16 +5,26 @@ bipartidas. Leia [`docs/README.md`](docs/README.md) para o mapa completo.
 
 ## Antes de qualquer trabalho: leia `observacoes/`
 
-A pasta [`observacoes/`](observacoes/README.md) guarda os recados que uma
-frente deixa para outra. **No começo de toda sessão**, antes de propor ou
-alterar qualquer coisa:
+A pasta [`observacoes/`](observacoes/README.md) guarda as pendências de
+cada frente. **No começo de toda sessão**, antes de propor ou alterar
+qualquer coisa:
 
-1. Descubra quem está trabalhando: pergunte, ou use `git config user.name`
-   e o nome do branch. Pedro = Frente A (`para-pedro.md`), Gabriel =
-   Frente B (`para-gabriel.md`), Lucas = Frente C (`para-lucas.md`).
-2. Leia a seção **Abertas** do arquivo dessa pessoa e do `para-todos.md`,
-   e avise o usuário das observações abertas antes de seguir com o pedido
-   dele — em especial das que tocam nos arquivos que ele vai mexer.
+1. Veja quais frentes o pedido toca: Frente A (`para-frente-a.md`,
+   `src/edugraph/data/`), Frente B (`para-frente-b.md`,
+   `src/edugraph/community/`) e Frente C (`para-frente-c.md`,
+   `src/edugraph/centrality/`, `api/`, `frontend/`). O que é transversal
+   (`contracts/`, `lab/`, `__main__.py`, configs, docs) fica em
+   `para-todos.md`.
+2. Leia a seção **Abertas** desses arquivos e do `para-todos.md`, e avise
+   o usuário das observações abertas antes de seguir com o pedido —
+   em especial das que tocam nos arquivos que ele vai mexer.
+
+**Quem trabalha no repositório é o grupo, não uma pessoa.** Não
+identifique nem cite integrantes em observações, documentação, specs,
+ADRs ou comentários: a autoria e a responsabilidade são da frente
+(`Frente A`, `Frente B`, `Frente C`) ou do grupo. Os nomes só aparecem
+como autoria do TCC (cabeçalho do README, `pyproject.toml`, rodapé da
+interface).
 
 ### Manter a pasta em dia é automático — ninguém precisa pedir
 
@@ -22,27 +32,26 @@ Anotar e fechar observações faz parte de toda tarefa, como rodar os
 testes. **Não espere o usuário pedir e não pergunte se deve fazer.**
 
 - **Fechar.** Antes de cada commit, confira se algum arquivo alterado
-  aparece numa observação aberta (de qualquer pessoa, não só de quem está
-  trabalhando) e se a mudança resolve o que ela pede — mesmo que a tarefa
+  aparece numa observação aberta (de qualquer frente, não só das que a
+  tarefa toca) e se a mudança resolve o que ela pede — mesmo que a tarefa
   fosse outra. Se resolve, mova o item para **Resolvidas** no mesmo commit,
-  com a linha `- **Resolvida:** data por <pessoa>, commit/branch — o que foi
-  feito`. Se resolve só em parte, atualize o texto do item e deixe-o em
+  com a linha `- **Resolvida:** data pela Frente X, commit/branch — o que
+  foi feito`. Se resolve só em parte, atualize o texto do item e deixe-o em
   **Abertas**. Nunca apague itens: "tirar" é mover para **Resolvidas**.
-- **Anotar.** Achou um problema num arquivo de outra frente, ou uma
-  pendência que depende de outra pessoa? Se a correção é pequena e você
-  está com a mão no arquivo, corrija e avise; se depende de decisão do
-  dono, **registre** no arquivo dele, no formato de
+- **Anotar.** Achou um problema ou uma pendência que fica para depois?
+  Se a correção é pequena e você está com a mão no arquivo, corrija; se
+  depende de uma decisão ou de trabalho maior, **registre** no arquivo da
+  frente dona daquele código, no formato de
   [`observacoes/README.md`](observacoes/README.md), com caminho, linha,
-  evidência e correção sugerida. Pendência da própria pessoa que ficou para
-  depois também vira observação no arquivo dela.
+  evidência e correção sugerida.
 - **Avisar.** Ao terminar, diga ao usuário quais observações foram abertas
   ou fechadas na tarefa.
 
-**Desde 30/10/2026, os três podem mexer em qualquer parte do sistema**
-(decisão do grupo, registrada na [ADR-0013](docs/adr/ADR-0013-laboratorio-ao-vivo.md)):
-as frentes, os contratos e este arquivo foram montados para a fase de
-arquitetura. Ao mexer em arquivo que outra pessoa mantém, deixe uma
-observação avisando o dono do que mudou.
+**Desde 30/10/2026, qualquer parte do sistema pode ser alterada em
+qualquer tarefa** (decisão do grupo, registrada na
+[ADR-0013](docs/adr/ADR-0013-laboratorio-ao-vivo.md)). As frentes dividem o
+código **por assunto**, não por pessoa (ADR-0014): elas organizam as specs,
+as observações e a fronteira de import, e ninguém é "dono" de uma frente.
 
 ## As três regras que não se negociam
 
@@ -87,7 +96,7 @@ Verificado por `tests/contract/test_import_boundaries.py`. ADR-0003.
 
 `src/edugraph/contracts/` entrou em `main` no dia 0 e ficou **congelado**
 durante a fase de arquitetura. O congelamento acabou em 30/10/2026: mudar
-um contrato não exige mais ADR nem a aprovação dos três.
+um contrato não exige mais ADR nem aprovação de todo o grupo.
 
 O que continua valendo, porque as fixtures e os artefatos em disco
 dependem disso: mudar layout, nome de coluna ou semântica de campo
@@ -170,12 +179,12 @@ ruff check . && ruff format --check . && mypy src/edugraph/contracts
 - Commits em português com o id da spec:
   `B-03: modularidade à mão e comparação com NetworkX`.
 - PR que toca `contracts/`, `tests/contract/`, `data/fixtures/`,
-  `__main__.py`, `pyproject.toml` ou `requirements*.txt` precisa da
-  aprovação dos outros dois.
+  `__main__.py`, `pyproject.toml` ou `requirements*.txt` precisa de
+  aprovação no PR antes do merge.
 
 ## Ao escrever para o artigo
 
 Toda escolha não-óbvia vira parágrafo de justificativa e pergunta de
-banca. Se você tomou uma decisão que pode surpreender outra pessoa do
-grupo, ela vai para uma ADR ou para
+banca. Se você tomou uma decisão que pode surpreender
+quem ler o repositório depois, ela vai para uma ADR ou para
 `docs/artigo/decisoes-metodologicas.md` — no mesmo PR.

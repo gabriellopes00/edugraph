@@ -11,9 +11,9 @@ frente.** É o que garante que ninguém espere por ninguém.
 
 ## Por frente
 
-- [Frente A — Dados e Modelagem](frente-a/README.md) `[A]` Pedro
-- [Frente B — Detecção de Comunidades](frente-b/README.md) `[B]` Gabriel
-- [Frente C — Centralidade e Aplicação](frente-c/README.md) `[C]` Lucas
+- [Frente A — Dados e Modelagem](frente-a/README.md) `[A]`
+- [Frente B — Detecção de Comunidades](frente-b/README.md) `[B]`
+- [Frente C — Centralidade e Aplicação](frente-c/README.md) `[C]`
 
 ## Quadro geral
 

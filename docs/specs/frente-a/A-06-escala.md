@@ -1,7 +1,6 @@
 # [A-06] Estratégia de escala e rodada completa do OULAD
 
 **Frente:** A
-**Dono:** Pedro
 **Status:** concluída (18/09/2026) — reduções testadas e rodada real feita
 
 ## Objetivo

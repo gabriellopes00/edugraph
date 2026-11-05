@@ -2,7 +2,7 @@
 
 **Status:** proposta | aceita | substituída por ADR-NNNN
 **Data:** AAAA-MM-DD
-**Decidido por:** Pedro, Gabriel, Lucas
+**Decidido por:** o grupo
 **Frente:** [A] | [B] | [C] | [T]
 
 ## Contexto

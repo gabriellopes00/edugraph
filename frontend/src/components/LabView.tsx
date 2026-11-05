@@ -34,6 +34,7 @@ import type {
   LabRun,
   RoleId,
 } from "../types";
+import { Alca } from "./Alca";
 import { ControlesZoom } from "./ControlesZoom";
 import { idsDoSinal, type SinalFiltro } from "./Sinais";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -134,7 +135,21 @@ function Segmentado<T extends string>(props: {
   );
 }
 
-export function LabView({ tema, abrirTour }: { tema: "light" | "dark"; abrirTour: (nome: NomeDoTour) => void }) {
+export function LabView({
+  tema,
+  abrirTour,
+  esquerdaAberta,
+  direitaAberta,
+  alternarColuna,
+  abrirDireita,
+}: {
+  tema: "light" | "dark";
+  abrirTour: (nome: NomeDoTour) => void;
+  esquerdaAberta: boolean;
+  direitaAberta: boolean;
+  alternarColuna: (lado: "esquerda" | "direita") => void;
+  abrirDireita: () => void;
+}) {
   const [opcoes, setOpcoes] = useState<LabOptions | null>(null);
   const [pedido, setPedido] = useState<LabRequest>(PADRAO);
   const [carga, setCarga] = useState<Carga>({ status: "ocioso" });
@@ -156,6 +171,11 @@ export function LabView({ tema, abrirTour }: { tema: "light" | "dark"; abrirTour
   const [historico, setHistorico] = useState<Record<string, ComparacaoItem[]>>({});
   const canvasRef = useRef<LabCanvasHandle>(null);
   const ultimoPedido = useRef(0);
+
+  // Escolher um nó com a coluna fechada abre os detalhes: é o que se queria ver.
+  useEffect(() => {
+    if (selecionado) abrirDireita();
+  }, [selecionado, abrirDireita]);
 
   useEffect(() => {
     api.labOptions().then(setOpcoes).catch(() => setOpcoes(null));
@@ -318,6 +338,8 @@ export function LabView({ tema, abrirTour }: { tema: "light" | "dark"; abrirTour
     <>
       <main className="palco lab-palco" onKeyDown={atalhos}>
         <section className="figura-area lab-figura-area" aria-label="Laboratório: montagem da rede">
+          <Alca lado="esquerda" aberta={esquerdaAberta} rotulo="Turma e rede" controla="coluna-esquerda" onAlternar={() => alternarColuna("esquerda")} />
+          <Alca lado="direita" aberta={direitaAberta} rotulo="Resultado" controla="coluna-direita" onAlternar={() => alternarColuna("direita")} />
           <nav className="lab-etapas" aria-label="Etapas">
             <div className="lab-etapa-chips" data-tour="etapas">
               {ETAPAS.map((e, i) => (
@@ -477,7 +499,7 @@ export function LabView({ tema, abrirTour }: { tema: "light" | "dark"; abrirTour
           </p>
         </section>
 
-        <aside className="nota-lateral lab-lateral" aria-label="Narração e resultado" data-tour="narracao">
+        <aside className="nota-lateral lab-lateral" id="coluna-direita" aria-label="Narração e resultado" data-tour="narracao">
           <AnimatePresence>
             {run && grafo && selecionado && (
               <NodePanel
@@ -539,7 +561,7 @@ export function LabView({ tema, abrirTour }: { tema: "light" | "dark"; abrirTour
         </aside>
       </main>
 
-      <aside className="painel" aria-label="Controles do laboratório">
+      <aside className="painel" id="coluna-esquerda" aria-label="Controles do laboratório">
         <section className="cartao" data-tour="turma">
           <Passo n={1} titulo="Turma" ajuda="De onde vêm os alunos." />
           <div className="campo">

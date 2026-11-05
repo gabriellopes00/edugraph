@@ -1,4 +1,4 @@
-"""Frente C — Centralidade e Aplicação  ``[C]`` Lucas.
+"""Frente C — Centralidade e Aplicação  ``[C]``.
 
 Grau, intermediação (Brandes) e autovetor (iteração de potência), nas
 duas projeções; identificação das disciplinas críticas; API e front-end.

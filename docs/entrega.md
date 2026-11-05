@@ -1,6 +1,6 @@
 # Entrega — o que está pronto e o que falta
 
-Revisão de entrega feita em **30/10/2026** (Pedro, Frente A), simulando o
+Revisão de entrega feita em **30/10/2026** (Frente A), simulando o
 caminho de quem avalia: clone limpo, instalação, testes, pipeline
 sintético, API e a receita real do OULAD. Os números abaixo foram medidos
 nesta revisão, num Windows 11 com Python 3.14, sem Node instalado.
@@ -218,7 +218,7 @@ Onde o tempo vai, medido:
   contra 30 s), porque a projeção é densa e fica numa componente só até
   quase o fim. O único ganho barato é parar quando o Q cai muito abaixo do
   melhor já visto (~1/3 do tempo), e isso muda a semântica de "melhor Q do
-  dendrograma" — só com acordo do Gabriel e nota no artigo.
+  dendrograma" — só com acordo da Frente B e nota no artigo.
 - **A configuração da coorte é o maior desperdício.** Reduzir
   `sample_nodes` ou `time_budget_s` em `oulad_cohort_bbb_2013j.toml` tira
   horas da rodada sem tocar em código (T-OBS-01, decisão da Frente B).
@@ -242,7 +242,7 @@ front já estão no `.gitignore`. O peso vem das **figuras do artigo**:
 | Fontes do front (`frontend/public/fonts/`, duas versões) | 0,6 MB | 1,5 MB |
 | Todo o resto (código, docs, fixtures, tabelas) | < 1 MB | < 1 MB |
 
-**Decisão tomada (31/10/2026, por Pedro, a pedido do grupo): as figuras saem do
+**Decisão tomada (31/10/2026, a pedido do grupo): as figuras saem do
 repositório.** O grupo vai mostrar os resultados na própria interface, e as
 figuras do artigo não alteram nenhum resultado. `results/figures/` (42
 arquivos, 14,9 MB) foi apagada da árvore e entrou no `.gitignore`, junto com
@@ -306,17 +306,17 @@ sugerida ao professor não entre por engano num commit.
 | C-OBS-13 | C | capturas pesam 60% do repositório | junto com C-OBS-05 |
 
 Fechadas nesta revisão: A-OBS-01 a A-OBS-08 (ver
-[`observacoes/para-pedro.md`](../observacoes/para-pedro.md)).
+[`observacoes/para-frente-a.md`](../observacoes/para-frente-a.md)).
 
 ## Ordem sugerida até a entrega
 
 1. Decidir T-OBS-04 (front compilado, histórico, capturas) — reunião curta.
-2. Lucas: refazer as capturas em JPEG e gerar o build do front.
-3. Gabriel: B-OBS-03 e a configuração da coorte (T-OBS-01); Lucas:
+2. Frente C: refazer as capturas em JPEG e gerar o build do front.
+3. Frente B: B-OBS-03 e a configuração da coorte (T-OBS-01); Frente C:
    C-OBS-03 — os números e tabelas que o texto cita e o repositório ainda
    não reproduz.
 4. Rodar a receita do OULAD numa máquina (~14 min para as configurações do
-   artigo; já rodada na máquina do Pedro), empacotar `data/processed` e o
+   artigo; já rodada uma vez), empacotar `data/processed` e o
    build do front numa release.
 5. Último merge; se decidido, reescrever o histórico; clonar de novo e
    repetir o roteiro da seção 2 do zero.
@@ -369,3 +369,95 @@ explorador, que agora abre num dataset completo.
 Girvan–Newman) e 60 s; o Louvain da tela é uma implementação própria,
 conferida contra o `python-louvain` (Q a menos de 0,02, e a tela mostra os
 dois); os papéis usam limiares adaptados a redes densas.
+
+## 9. Comando único, OULAD à parte e hospedagem (04/11/2026)
+
+Preparação da apresentação ao orientador
+([`orientador/estudo-apresentacao-11-2026.md`](orientador/estudo-apresentacao-11-2026.md)).
+
+### Um comando: `python scripts/iniciar.py`
+
+Cria a `.venv`, instala o pacote, valida as fixtures, roda
+`pytest -m "not slow"`, compila o front (se houver Node) e abre
+http://127.0.0.1:8000/ no navegador. Cada passo já feito é pulado na
+rodada seguinte (a instalação é refeita só se o `pyproject.toml` mudar).
+Só biblioteca padrão, porque roda antes de o `edugraph` estar instalado.
+
+| Situação | Tempo medido |
+|---|---:|
+| clone limpo, sem `.venv` e sem build do front (Windows 11, Python 3.14, Node 26) | **2 min 05 s** (418 testes passando, 1 pulado) |
+| segunda vez, `--sem-testes` | ~2 s até o servidor responder |
+| `--oulad <zip>` com os três datasets | +30 s (extração e `validate`) |
+
+Opções: `--sem-testes`, `--oulad ZIP`, `--porta N`, `--sem-navegador`,
+`--sem-servidor` (só as conferências; sai com 1 se algo falhou).
+
+**O que ele não resolve:** sem Node, a interface continua sem build e `/`
+mostra o JSON (decisão 2 da T-OBS-04). E num caminho fundo do Windows não
+só o `git clone` falha: a criação da `.venv` também (`ensurepip` esbarra
+no limite de 260 caracteres) — reproduzido nesta data, numa pasta
+temporária de 130 caracteres.
+
+### Entregar o OULAD separado
+
+O sistema **já está preparado** para receber os dados à parte, sem
+mudar código: as raízes padrão são `data/processed` + `data/fixtures`,
+relativas à pasta de onde se roda o comando, e uma raiz ausente é só
+ignorada (`tests/api/test_raiz_ausente.py`). O que pode dar errado é
+**onde** o ZIP é extraído: uma pasta a mais por cima
+(`data/processed/processed/oulad_vle_bbb_2013j/`) ou rodar a API de outra
+pasta, e o dataset some da lista sem erro nenhum.
+
+O `iniciar.py --oulad` tira esse risco: procura no ZIP toda pasta que
+tenha `bipartite/nodes.csv`, qualquer que seja o nível, copia para
+`data/processed/` (sem sobrescrever o que já existe), roda `validate` e
+recusa com explicação o ZIP do OULAD **bruto**.
+
+**Nós, para gerar o ZIP** (na máquina que tem `data/processed/`):
+
+```powershell
+Compress-Archive -Path data\processed\* -DestinationPath oulad-resultados.zip
+```
+
+Medido: 135 MB em disco viram **31,5 MB** (os três datasets:
+`oulad_bbb_2013j`, `oulad_module_presentation`, `oulad_vle_bbb_2013j`).
+As réplicas nulas (`*_null0..4`) **não estão** em `data/processed/` desta
+máquina; sem elas o ZIP não sustenta o "5× acima do nulo" (A-OBS-11).
+
+**O professor, com o ZIP:**
+
+```bash
+python scripts/iniciar.py --oulad caminho\para\oulad-resultados.zip
+```
+
+Ou à mão: extrair de modo que exista
+`data/processed/oulad_vle_bbb_2013j/bipartite/nodes.csv`, rodar
+`python -m edugraph validate --root data/processed` e subir a API **da
+raiz do repositório**.
+
+**Com o OULAD bruto** (se ele pedir para reprocessar): a receita de
+[`specs/frente-a/README.md`](specs/frente-a/README.md). ~14 min para
+`oulad_module_presentation` e `oulad_vle_bbb_2013j`; a coorte
+`oulad_bbb_2013j` passa de 2 h por causa do Girvan–Newman (T-OBS-01).
+
+### Hospedagem: Vercel só com os dados fictícios
+
+**É possível, com adaptação; não é o caminho mais direto.** O que pesa:
+
+| Ponto | Situação |
+|---|---|
+| Runtime | Vercel roda FastAPI como função Python. O limite de pacote passou para 500 MB descompactados em 2026 (era 250 MB). Medido: numpy + scipy + networkx + FastAPI ≈ 170 MB; com pandas e matplotlib, que o `pyproject.toml` também instala, ≈ 275 MB. Cabe |
+| O que o servidor precisa | a API e o laboratório **não importam** pandas nem matplotlib e **não escrevem em disco** (conferido): servem bem a um ambiente só de leitura |
+| Arquivos novos | um ponto de entrada (`app = create_app([<raiz>/data/fixtures], dev_cors=False)`), um `vercel.json` com o build do front (`cd frontend && npm ci && npm run build`) e a inclusão explícita de `data/fixtures/` no pacote (o exemplo da documentação da Vercel exclui pastas `fixtures`) |
+| Partida a frio | cada instância nova paga o *import* de numpy/scipy/networkx (alguns segundos) na primeira requisição |
+| Tempo | o laboratório tem teto de 60 s e o Girvan–Newman, orçamento de 20 s: dentro do limite das funções |
+| OULAD | **fora**: a projeção do AVA ocupa ~1 GB no cache da API |
+| Exposição | `POST /lab/run` consome CPU e não tem autenticação (ADR-0013 diz "uso interno"); num link público, aceitável só com dados fictícios |
+
+**Alternativa sem adaptar nada:** um serviço que rode um contêiner com o
+mesmo `python -m edugraph api serve` (Hugging Face Spaces em Docker,
+Render). Serve o mesmo sistema que o professor roda localmente e, com
+memória suficiente, até os resultados do OULAD. **Recomendação:** perguntar
+ao orientador se o link ajuda (estudo da apresentação, pergunta 2) antes de investir; se
+ajudar, o contêiner é o caminho de menos risco, e a Vercel serve se o grupo
+já usa a conta.

@@ -2,7 +2,7 @@
 
 **Status:** aceita (substitui em parte a ADR-0004)
 **Data:** 2026-10-30
-**Decidido por:** Pedro, Gabriel, Lucas
+**Decidido por:** o grupo
 **Frente:** [T]
 
 ## Contexto

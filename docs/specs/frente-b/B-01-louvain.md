@@ -1,7 +1,6 @@
 # [B-01] Louvain sobre `ProjectionBundle`
 
 **Frente:** B
-**Dono:** Gabriel
 **Status:** concluída (20/09/2026)
 
 ## Objetivo

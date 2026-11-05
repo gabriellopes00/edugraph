@@ -1,7 +1,6 @@
 # [C-07] Relatório interno consolidado
 
 **Frente:** C
-**Dono:** Lucas
 **Status:** concluída (25/09/2026)
 
 ## Objetivo

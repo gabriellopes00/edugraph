@@ -1,7 +1,6 @@
 # [A-07] Estatísticas descritivas e figura do bipartido
 
 **Frente:** A
-**Dono:** Pedro
 **Status:** concluída sobre as fixtures (18/09/2026); a figura final do artigo sai da rodada do OULAD
 
 ## Objetivo

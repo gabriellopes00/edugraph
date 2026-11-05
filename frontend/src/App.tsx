@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent }
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 
 import { ApiError, api } from "./api";
+import { Alca, useColunas } from "./components/Alca";
 import { CommunityLegend, LegendaDeDesfecho } from "./components/CommunityLegend";
 import { ControlesZoom } from "./components/ControlesZoom";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -30,7 +31,7 @@ import { jaVisto, marcarVisto, opcoesDaUrl, type NomeDoTour } from "./tour/estad
 import { PASSOS } from "./tour/passos";
 import { Tour } from "./tour/Tour";
 import { NodePanel } from "./components/NodePanel";
-import { idsDoSinal, PainelSinais, type SinalFiltro } from "./components/Sinais";
+import { Conferencia, idsDoSinal, PainelSinais, type SinalFiltro } from "./components/Sinais";
 import { Seletor } from "./components/Seletor";
 import { StatsBar } from "./components/StatsBar";
 import type {
@@ -110,6 +111,15 @@ export default function App() {
   /** Tour aberto agora, se houver. O de cada tela abre sozinho na primeira visita. */
   const [tour, setTour] = useState<NomeDoTour | null>(null);
   const tourForcado = useRef(false);
+  // Colunas laterais retráteis. Com o tour aberto ficam as duas à vista: ele aponta para elas.
+  const { abertas, definir } = useColunas();
+  const esquerdaAberta = abertas.esquerda || tour !== null;
+  const direitaAberta = abertas.direita || tour !== null;
+  const alternarColuna = useCallback(
+    (lado: "esquerda" | "direita") => definir(lado, !abertas[lado]),
+    [abertas, definir],
+  );
+  const abrirDireita = useCallback(() => definir("direita", true), [definir]);
 
   useEffect(() => {
     const opcoes = opcoesDaUrl(window.location.search);
@@ -177,6 +187,11 @@ export default function App() {
   const [papel, setPapel] = useState<RoleId | null>(null);
   const [sinal, setSinal] = useState<SinalFiltro | null>(null);
   const [bolhas, setBolhas] = useState(true);
+
+  // Escolher um nó com os detalhes fechados abre a coluna: é o que se queria ver.
+  useEffect(() => {
+    if (selecionado) abrirDireita();
+  }, [selecionado, abrirDireita]);
 
   useEffect(() => {
     api
@@ -354,11 +369,11 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-    <div className={`app ${apresentando ? "apresentando" : ""}`}>
+    <div className={`app ${apresentando ? "apresentando" : ""} ${esquerdaAberta ? "" : "esq-fechada"} ${direitaAberta ? "" : "dir-fechada"}`}>
       <header className="topo">
         <div className="hero">
           <p className="sobrelinha">Trabalho de Conclusão de Curso · Grupo 16 · UniAnchieta</p>
-          <h1>Análise Topológica e Detecção de Comunidades em Redes Complexas</h1>
+          <h1 title="Análise Topológica e Detecção de Comunidades em Redes Complexas">Análise Topológica e Detecção de Comunidades em Redes Complexas</h1>
           <p className="autores" title={AUTORES.join(", ")}>{AUTORES.join(", ")}</p>
           <nav className="abas" aria-label="Seções" data-tour="abas">
             {ABAS.map((a) => (
@@ -376,7 +391,7 @@ export default function App() {
           </nav>
         </div>
         <div className="topo-lado">
-          <span className="wordmark"><Marca /> edugraph</span>
+          <span className="wordmark"><Marca /><span className="wordmark-nome">edugraph</span></span>
           <div className="topo-status">
             <StatusApi estado={health} />
             <button type="button" className="tema-botao botao-tour" onClick={() => setTour(aba === "laboratorio" ? "lab" : "explorador")}
@@ -393,11 +408,20 @@ export default function App() {
         </div>
       </header>
       {aba === "laboratorio" ? (
-        <LabView tema={tema} abrirTour={setTour} />
+        <LabView
+          tema={tema}
+          abrirTour={setTour}
+          esquerdaAberta={esquerdaAberta}
+          direitaAberta={direitaAberta}
+          alternarColuna={alternarColuna}
+          abrirDireita={abrirDireita}
+        />
       ) : (
       <>
       <main className="palco" onKeyDown={atalhosDoPalco}>
         <section className="figura-area" aria-label="Figura da rede" data-tour="x-grafo">
+          <Alca lado="esquerda" aberta={esquerdaAberta} rotulo="Controles" controla="coluna-esquerda" onAlternar={() => alternarColuna("esquerda")} />
+          <Alca lado="direita" aberta={direitaAberta} rotulo="Detalhes" controla="coluna-direita" onAlternar={() => alternarColuna("direita")} />
           {dadosGrafo && <StatsBar graph={dadosGrafo} partition={particao} />}
           <div className="figura">
             <AnimatePresence mode="wait">
@@ -431,14 +455,14 @@ export default function App() {
             <b>Espessura</b> da linha é o peso da ligação. Clique num nó para ver os detalhes.
           </p>
         </section>
-        <aside className="nota-lateral" aria-label="Detalhes do nó">
+        <aside className="nota-lateral" id="coluna-direita" aria-label="Detalhes do nó">
           {!(dadosGrafo && selecionado) && <p className="inspetor-vazio">Selecione um nó no grafo para ver comunidade, centralidades e vizinhos.</p>}
           <AnimatePresence>
             {dadosGrafo && selecionado && <NodePanel graph={dadosGrafo} membership={membership} nodeId={selecionado} onSelect={setSelecionado} leitura={leitura} />}
           </AnimatePresence>
         </aside>
       </main>
-      <aside className="painel" aria-label="Controles do grafo">
+      <aside className="painel" id="coluna-esquerda" aria-label="Controles do grafo">
         <section className="cartao" data-tour="x-dados">
           <Passo n={1} titulo="Dados" ajuda="Conjunto lido do disco." />
           {datasets.status === "carregando" && (
@@ -571,7 +595,6 @@ export default function App() {
                         if (f) setPapel(null);
                       }}
                       onSelecionar={setSelecionado}
-                      validacao={mostrarDesfecho ? (desfechos?.signals ?? null) : null}
                     />
                   </>
                 ) : (
@@ -591,6 +614,11 @@ export default function App() {
                     </label>
                     {mostrarDesfecho && (
                       <p className="opcoes-desc">O grafo não usou notas nem desfecho; eles só foram cruzados com os grupos agora.</p>
+                    )}
+                    {mostrarDesfecho && desfechos?.signals && (
+                      <div className="campo">
+                        <Conferencia validacao={desfechos.signals} />
+                      </div>
                     )}
                   </>
                 )}

@@ -1,7 +1,6 @@
 # [A-01] Gerador sintético determinístico com comunidades plantadas
 
 **Frente:** A
-**Dono:** Pedro
 **Status:** concluída (18/09/2026)
 
 ## Objetivo

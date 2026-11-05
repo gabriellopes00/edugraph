@@ -106,11 +106,13 @@ o grupo, e *Revelar o desfecho* cruza o grupo com `outcomes.csv`
    parecido; o método diz isso com honestidade". Use *Manter só as 30%
    mais fortes*.
 6. **Explorar resultados.** O AVA inteiro, *Revelar o desfecho*: o grupo
-   "Pouco engajados" concentra 72% de reprovados e desistentes.
+   "Pouco engajados" concentra 69% de reprovados e desistentes na
+   partição por alocação de recursos (72% na de contagem simples).
 7. **Perfis dos alunos.** Em qualquer resultado de alunos: *Quem merece
    atenção* e *Possíveis talentos*, cada um com o porquê. Clique num
    perfil para ver no grafo e em *Revelar o desfecho* para conferir: no
-   AVA, 92% dos de risco alto reprovaram ou desistiram (42% da turma).
+   AVA, 94% dos de risco alto reprovaram ou desistiram na alocação de
+   recursos, 91% na contagem simples (43% da turma).
 
 ## O que a interface faz (spec C-05)
 
@@ -200,6 +202,17 @@ filetes. O título curto da aplicação e os três autores foram preservados.
   uma linha própria abaixo do canvas. O menu tem largura mínima de cerca
   de 20rem limitada à viewport; ids ficam em uma linha com reticências e
   texto completo no `title`, enquanto rótulos podem quebrar entre palavras.
+- **Notebook e colunas retráteis:** as colunas laterais têm largura
+  fluida (`clamp` em `vw`: 248–300 px à esquerda, 272–344 px à direita no
+  explorador e até 384 px no laboratório) e cada uma fecha por uma aba na
+  borda da figura (`Alca.tsx`: *Controles*/*Detalhes* no explorador, *Turma e
+  rede*/*Resultado* no laboratório). A escolha fica em `localStorage`; o tour
+  abre as duas, e escolher um nó reabre os detalhes. `useRedimensionar` chama
+  `cy.resize()` e reenquadra quando a figura muda de largura. Em telas com
+  até 860 px de altura o cabeçalho vira uma linha (título + abas + botões, sem
+  autores), o rodapé e as faixas encolhem e a legenda do laboratório fica em
+  duas linhas: em 1366×650 o grafo passa de 610×190 px para 714×427 px, e
+  com as duas colunas fechadas, para 1295×425 px.
 - **Estados e acessibilidade:** vazio com filete tracejado, carregamento com
   fio de progresso e erro textual legível; foco visível azul, contraste de
   tinta e papel e cor/forma redundantes. `MotionConfig reducedMotion="user"`

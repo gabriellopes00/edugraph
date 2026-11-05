@@ -10,7 +10,7 @@ algoritmos de ``[community] algorithms`` sobre as projeções de
 Ele **não** falha quando um algoritmo estoura o orçamento: a partição
 sai com ``status="timeout"`` e vira linha da tabela (ADR-0006). Falha só
 quando falta artefato de entrada ou quando um parâmetro do TOML não
-existe — as duas coisas que o dono da configuração precisa corrigir.
+existe — as duas coisas que quem mantém a configuração precisa corrigir.
 """
 
 from __future__ import annotations

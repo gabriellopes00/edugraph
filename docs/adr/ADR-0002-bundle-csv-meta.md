@@ -2,7 +2,7 @@
 
 **Status:** aceita
 **Data:** 2026-09-17
-**Decidido por:** Pedro, Gabriel, Lucas
+**Decidido por:** o grupo
 **Frente:** [T]
 
 ## Contexto

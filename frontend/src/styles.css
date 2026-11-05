@@ -59,9 +59,13 @@ button, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
 
 .app {
+  /* Larguras das colunas: acompanham a janela (notebook de 1366 px a tela grande)
+   * e vão a 0 quando a coluna é recolhida (ver as abas `.alca`). */
+  --col-esq: clamp(248px, 18.5vw, 300px);
   height: 100dvh;
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: var(--col-esq) minmax(0, 1fr);
+  transition: grid-template-columns 200ms ease;
   grid-template-rows: auto minmax(0, 1fr) auto;
   grid-template-areas: "topo topo" "metodos palco" "rodape rodape";
 }
@@ -83,8 +87,8 @@ h1 {
 }
 .autores { margin-top: 6px; color: var(--text-2); font-size: 14px; }
 .topo-lado { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
-.wordmark { display: flex; align-items: center; gap: 8px; font: 600 19px/1 var(--serif); letter-spacing: -0.01em; }
-.wordmark svg { display: block; }
+.wordmark { display: flex; align-items: center; gap: 12px; font: 600 32px/1 var(--serif); letter-spacing: -0.015em; }
+.wordmark svg { display: block; width: 56px; height: 28px; }
 .topo-status { display: flex; align-items: center; gap: 16px; color: var(--text-2); font-size: 13.5px; }
 .status-pilula { display: inline-flex; align-items: center; gap: 7px; }
 .status-ponto { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
@@ -99,7 +103,7 @@ h1 {
 .tema-botao:active { transform: scale(0.97); }
 
 /* ——— Figura ——— */
-.figura-area { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-width: 0; padding: 0 36px; }
+.figura-area { position: relative; container-type: inline-size; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-width: 0; padding: 0 clamp(28px, 2.6vw, 36px); }
 .stats { display: flex; gap: 0; border-bottom: 1px solid var(--rule); }
 .stats div { padding: 18px 28px 14px 0; margin-right: 28px; border-right: 1px solid var(--rule); }
 .stats div:last-child { border-right: 0; }
@@ -140,7 +144,7 @@ code { font: 12px/1.5 var(--mono); overflow-wrap: anywhere; }
 .status-versao { white-space: nowrap; }
 .status-raizes { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tema-trocando body { transition: background-color 180ms ease, color 180ms ease; }
-.painel { grid-area: metodos; overflow-x: hidden; overflow-y: auto; min-height: 0; padding: 8px 28px 28px 32px; border-right: 1px solid var(--rule); }
+.painel { grid-area: metodos; overflow-x: hidden; overflow-y: auto; min-height: 0; padding: 8px clamp(18px, 1.7vw, 28px) 28px clamp(20px, 2vw, 32px); border-right: 1px solid var(--rule); }
 .cartao { padding: 16px 0 18px; border-bottom: 1px solid var(--rule); }
 .cartao:last-child { border-bottom: 0; }
 .passo { display: flex; align-items: baseline; gap: 10px; }
@@ -187,13 +191,13 @@ code { font: 12px/1.5 var(--mono); overflow-wrap: anywhere; }
 .opcoes-desc { margin: 8px 0 0 20px; color: var(--text-muted); font-size: 13.5px; line-height: 1.4; }
 .nota { margin-left: 20px; color: var(--text-muted); font-size: 13.5px; overflow-wrap: anywhere; }
 .nota-erro { color: var(--error); }
-.palco { grid-area: palco; display: grid; grid-template-columns: minmax(0, 1fr) 344px; min-width: 0; min-height: 0; }
+.palco { --col-dir: clamp(272px, 24vw, 344px); grid-area: palco; display: grid; grid-template-columns: minmax(0, 1fr) var(--col-dir); transition: grid-template-columns 200ms ease; min-width: 0; min-height: 0; }
 .figura-area:has(.vazio) { grid-template-rows: minmax(0, 1fr) auto; }
 .palco-conteudo { position: absolute; inset: 0; }
 .graph-view, .graph-canvas { position: relative; width: 100%; height: 100%; }
 .aviso { position: absolute; top: 10px; left: 0; right: 0; z-index: 2; font-size: 12px; line-height: 1.4; padding: 8px; background: var(--paper); border: 1px solid var(--rule); color: var(--text-2); }
 .glifos-legenda svg { width: 32px; height: 13px; }
-.nota-lateral { min-height: 0; overflow: auto; border-left: 1px solid var(--rule); padding: 22px 30px 28px 28px; }
+.nota-lateral { min-height: 0; overflow: auto; border-left: 1px solid var(--rule); padding: 22px clamp(18px, 1.9vw, 30px) 28px clamp(18px, 1.8vw, 28px); }
 .inspetor-vazio { color: var(--text-muted); font: italic 400 16px/1.5 var(--serif); padding-top: 40px; max-width: 26ch; }
 .node-panel-topo { display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 13.5px; }
 .fechar { width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; display: grid; place-items: center; color: var(--text-2); }
@@ -230,11 +234,6 @@ code { font: 12px/1.5 var(--mono); overflow-wrap: anywhere; }
 .fio { display: block; width: min(220px, 100%); height: 2px; background: var(--rule); margin: 6px auto 0; overflow: hidden; }
 .fio span { display: block; width: 38%; height: 100%; background: var(--text); }
 @media (min-width: 761px) and (max-width: 1199px) {
-  .app { grid-template-columns: 256px minmax(0, 1fr); }
-  .palco { grid-template-columns: minmax(0, 1fr) 280px; }
-  .painel { padding-left: 24px; padding-right: 20px; }
-  .figura-area { padding: 0 24px; }
-  .nota-lateral { padding: 22px 20px; }
   .stats div { margin-right: 16px; padding-right: 16px; }
   .stats dd { font-size: 27px; }
   .topo { gap: 24px; padding-left: 24px; padding-right: 24px; }
@@ -249,6 +248,8 @@ code { font: 12px/1.5 var(--mono); overflow-wrap: anywhere; }
   .topo-lado { flex-direction: row; justify-content: space-between; align-items: center; gap: 12px; }
   .topo-status { gap: 12px; font-size: 12px; }
   .status-raizes { display: none; }
+  .wordmark { gap: 8px; font-size: 22px; }
+  .wordmark svg { width: 40px; height: 20px; }
   .sobrelinha { font-size: 13.5px; }
   h1 { font-size: 23px; }
   .autores { font-size: 13px; }
@@ -274,7 +275,7 @@ code { font: 12px/1.5 var(--mono); overflow-wrap: anywhere; }
 .painel::-webkit-scrollbar, .nota-lateral::-webkit-scrollbar { width: 5px; }
 .painel::-webkit-scrollbar-thumb, .nota-lateral::-webkit-scrollbar-thumb { background: var(--rule-2); }
 .passo-texto { min-width: 0; }
-.campo-id { white-space: nowrap; font-size: 11px; }
+.campo-id { overflow-wrap: anywhere; font-size: 11px; }
 .segmentado { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .segmentado button { gap: 10px; font-size: 14px; }
 .q-metrica { column-gap: 8px; }
@@ -336,7 +337,7 @@ code { font: 12px/1.5 var(--mono); overflow-wrap: anywhere; }
 .lab-nota { margin: 8px 0 0; font-size: 13px; line-height: 1.45; color: var(--text-2); }
 .lab-nota.dim { color: var(--text-muted); }
 
-.lab-palco { grid-template-columns: minmax(0, 1fr) 384px; }
+.lab-palco { --col-dir: clamp(272px, 24vw, 384px); }
 .lab-figura-area { grid-template-rows: auto minmax(0, 1fr) auto auto; }
 .lab-figura-area:has(.vazio) { grid-template-rows: auto minmax(0, 1fr) auto auto; }
 .lab-etapas { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 14px 0 12px; border-bottom: 1px solid var(--rule); }
@@ -434,7 +435,6 @@ code { font: 12px/1.5 var(--mono); overflow-wrap: anywhere; }
 .app.apresentando .legenda-desc { font-size: 14px; }
 
 @media (min-width: 761px) and (max-width: 1199px) {
-  .lab-palco { grid-template-columns: minmax(0, 1fr) 300px; }
   .lab-algoritmo-rotulo { display: none; }
 }
 @media (max-width: 760px) {
@@ -559,3 +559,61 @@ code { font: 12px/1.5 var(--mono); overflow-wrap: anywhere; }
   .painel:has(.lab-campo) .deslizante { margin-top: 8px; }
   .painel:has(.lab-campo) .botao-secundario { margin-top: 8px; }
 }
+
+/* ================= Colunas retráteis e telas de notebook ================= */
+
+/* Aba na borda da figura: abre e fecha a coluna do lado. Mora no vão lateral da figura. */
+.alca { position: absolute; top: 50%; z-index: 4; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; width: 24px; padding: 10px 0; border: 1px solid var(--rule-control); background: var(--sheet); color: var(--text-2); font-size: 12.5px; font-weight: 500; line-height: 1; transition: background-color 150ms ease, color 150ms ease; }
+.alca:hover { background: var(--hover); color: var(--text); }
+.alca span { writing-mode: vertical-rl; white-space: nowrap; }
+.alca-esquerda { left: 0; border-left: 0; border-radius: 0 6px 6px 0; }
+.alca-direita { right: 0; border-right: 0; border-radius: 6px 0 0 6px; }
+
+@media (min-width: 761px) {
+  .app.esq-fechada { --col-esq: 0px; }
+  .app.dir-fechada .palco { --col-dir: 0px; }
+  .app.esq-fechada .painel,
+  .app.dir-fechada .nota-lateral { visibility: hidden; overflow: hidden; padding-left: 0; padding-right: 0; border-width: 0; }
+  .app.apresentando .alca { display: none; }
+}
+@media (max-width: 760px) { .alca { display: none; } }
+
+/* Figura estreita (as duas colunas abertas num notebook): a faixa de etapas cabe numa linha. */
+@container (max-width: 760px) {
+  .lab-algoritmo-rotulo { display: none; }
+  .lab-etapas { gap: 6px; }
+  .lab-etapa-chip { padding-right: 10px; font-size: 13px; gap: 6px; }
+  .lab-algoritmo button { padding: 5px 10px; font-size: 13px; }
+}
+
+/* Telas baixas (notebook): o grafo ganha a altura que o cabeçalho, as faixas e o rodapé tomavam. */
+@media (min-width: 761px) and (max-height: 860px) {
+  .topo { align-items: center; gap: 16px; padding: 8px 24px; }
+  .hero { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 28px; }
+  .sobrelinha, .autores { display: none; }
+  /* Marca menor, sem o nome quando a linha aperta (notebook de 1366 px). */
+  .wordmark { gap: 8px; font-size: 20px; }
+  .wordmark svg { width: 36px; height: 18px; }
+  .wordmark-nome { display: none; }
+  h1 { flex: 1 1 0; min-width: 0; margin: 0; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .abas { margin-top: 0; flex: none; }
+  .abas button { margin-right: 18px; padding: 3px 0 4px; font-size: 15px; }
+  .abas button:last-child { margin-right: 0; }
+  .topo-lado { flex-direction: row; align-items: center; gap: 12px; }
+  .topo-status { gap: 10px; }
+  .status-raizes { display: none; }
+  .tema-botao { padding: 3px 10px 3px 8px; font-size: 13px; }
+
+  .rodape { padding: 5px 24px; font-size: 12px; }
+  .stats div { padding: 8px 20px 6px 0; margin-right: 20px; }
+  .stats dt { font-size: 12.5px; }
+  .stats dd { font-size: 22px; }
+  .lab-etapas { padding: 8px 0; }
+  .lab-etapa-chip { padding-top: 2px; padding-bottom: 2px; font-size: 13px; }
+  .lab-controle { padding: 6px 0; }
+  .legenda-fig { padding: 6px 0 8px; font-size: 13px; line-height: 1.4; }
+  .lab-legenda { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .nota-lateral, .lab-lateral { padding-top: 14px; }
+  .lab-recalculando, .lab-pendente { top: 8px; }
+}
+@media (min-width: 1500px) and (max-height: 860px) { .wordmark-nome { display: inline; } }

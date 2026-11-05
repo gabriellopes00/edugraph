@@ -75,14 +75,14 @@ flowchart LR
 
 ## O que cada frente produz e consome
 
-**`[A]` Pedro** produz `bipartite/`, `projections/`, `outcomes.csv` e
+**`[A]` Dados e Modelagem** produz `bipartite/`, `projections/`, `outcomes.csv` e
 `metrics/projections.csv`. Consome só CSV bruto.
 
-**`[B]` Gabriel** produz `communities/` (partição, perfil, Q, tempo,
+**`[B]` Comunidades** produz `communities/` (partição, perfil, Q, tempo,
 status) e `metrics/communities.csv`. Consome `projections/` e
 `bipartite/`; lê `outcomes.csv` apenas na validação.
 
-**`[C]` Lucas** produz `centrality/`, `metrics/centrality_top.csv`, a API
+**`[C]` Centralidade e Aplicação** produz `centrality/`, `metrics/centrality_top.csv`, a API
 e a interface. Consome `projections/`, `communities/` e os próprios
 `centrality/`.
 

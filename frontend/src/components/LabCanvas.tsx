@@ -20,6 +20,7 @@ import { communityStyle, themeColor } from "../palette";
 import { indicesDeCor, type Estado } from "../lab/frames";
 import type { CentralityMetric, LabRun, RoleId } from "../types";
 import { useCascas, type Casca } from "./cascas";
+import { useRedimensionar } from "./useRedimensionar";
 import { CLASSES_DA_SELECAO, destacarSelecao, enquadrarGrupo, estiloDaSelecao } from "./selecao";
 
 cytoscape.use(fcose);
@@ -372,6 +373,8 @@ export const LabCanvas = forwardRef<LabCanvasHandle, LabCanvasProps>(function La
     }),
     [],
   );
+
+  useRedimensionar(hostRef, cyRef, (instancia) => enquadrar(instancia, false));
 
   // 1. Um Cytoscape por rodada.
   useEffect(() => {

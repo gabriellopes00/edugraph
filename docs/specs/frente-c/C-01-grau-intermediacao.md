@@ -1,7 +1,6 @@
 # [C-01] Grau e intermediação nas duas projeções
 
 **Frente:** C
-**Dono:** Lucas
 **Status:** concluída (25/09/2026)
 
 ## Objetivo

@@ -524,7 +524,7 @@ de 1.747.515 pares possíveis): todo par de alunos é vizinho, nenhum
 caminho mínimo passa por um terceiro, e a intermediação em saltos dá
 **zero para os 1.870 alunos**. Ali só o peso distingue, e a configuração
 usa `inverse` (com 200 pivôs amostrados, porque a versão exata com peso
-não termina em tempo razoável). O Pedro já tinha visto isso na A-09 e
+não termina em tempo razoável). A Frente A já tinha visto isso na A-09 e
 escrito `"distance"`, que o contrato não aceita; o valor foi corrigido
 para `inverse`, que é a mesma intenção. A regra, portanto: **`none` onde
 a projeção é esparsa o bastante para haver caminhos de mais de um salto

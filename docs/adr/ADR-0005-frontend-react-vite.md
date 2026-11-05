@@ -2,7 +2,7 @@
 
 **Status:** aceita
 **Data:** 2026-09-17
-**Decidido por:** Pedro, Gabriel, Lucas — **decisão D3 do plano de arquitetura**
+**Decidido por:** o grupo — **decisão D3 do plano de arquitetura**
 **Frente:** [C]
 
 ## Contexto
